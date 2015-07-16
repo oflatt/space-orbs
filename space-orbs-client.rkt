@@ -281,6 +281,8 @@
      (cond
        [(zero? dist) poc]
        [else
+        op
+        #;
         (pos+ poc (dir-scale (dir-normalize back-dir) 1/2))])]
     [else mp]))
 
