@@ -470,8 +470,6 @@
      TESTORB
      1
      5
-     55
-     50
      "drag"))
    (struct-copy
     orb
