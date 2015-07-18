@@ -4,16 +4,20 @@
 
 (define BEGINNING? #t);sets the mous to the middle initially without moving the view
 
-(define (on-mouse os n t x-ignored y-ignored e)
+(define (on-mouse g n t x-ignored y-ignored e)
   (cond
     [BEGINNING?
      (set! BEGINNING? #f)
      (move-mouse-to-center)
-     os]
+     g]
     [else
-     (struct-copy orbs os
-                  [player (on-player-mouse (orbs-player os) n t e)]
-                  [enemy (orbs-enemy os)])]))
+     (struct-copy game g
+                  [orbs (on-orbs-mouse (game-orbs g) n t e)])]))
+                  
+
+(define (on-orbs-mouse os n t e)
+  (struct-copy orbs os
+               [player (on-player-mouse (orbs-player os) n t e)]))
 
 (define (on-player-mouse o n t e)
   (define-values (x y) (get-mouse-delta))
@@ -68,7 +72,7 @@
 ;;takes list of a dir and ang and o x y t-> list of dir and ang
 (define (adjust-for-mouse-y l o x y t)
   (define dir (first l))
-  (define d (rotation-to-dir dir (second l)))
+  (define d (rotate-right dir (second l)))
   (define pd (rotate-around-dir dir d 90))
   (cond
     [(equal? y 0)
@@ -86,7 +90,7 @@
 ;;yaw is rotation about z axis, so we compare x positions
 ;;gives a list of dir and ang
 (define (adjust-for-mouse-x dir o x y t)
-  (define pd (rotation-to-dir (orb-dir o) (current-ang o t)))
+  (define pd (rotate-right (orb-dir o) (current-ang o t)))
   (cond
     [(equal? x 0)
      (list

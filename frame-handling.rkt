@@ -2,7 +2,7 @@
 (require racket/gui/base
          racket/class)
 
-(provide get-mouse-delta maximize-screen move-mouse-to-center)
+(provide get-mouse-delta maximize-screen move-mouse-to-center make-cursor-blank)
 
 (define (get-mouse-delta)
   (define f (get-top-level-focus-window))
@@ -57,3 +57,7 @@
 (define (maximize-screen)
   (define f (get-top-level-focus-window))
   (send f maximize #t))
+
+(define (make-cursor-blank)
+  (define f (get-top-level-focus-window))
+  (send f set-cursor (make-object cursor% 'blank)))

@@ -1,5 +1,5 @@
 #lang racket
-(require rackunit pict3d "structures.rkt" "current-ang-and-pos.rkt" "variables.rkt")
+(require rackunit pict3d "structures.rkt" "current-ang-and-pos.rkt" "variables.rkt" "big-crunch.rkt")
 (provide on-key on-release)
 
 (define (find-this-movekey key ms)
@@ -15,10 +15,18 @@
 (module+ test (check-equal? (find-this-movekey "a" (list (movekey "w" 1/2) (movekey "a" 1/2)))
                             (movekey "a" 1/2)))
 
-(define (on-key os n t key)
+(define (on-key g n t key)
+  (cond
+    [(equal? key "escape")
+     (struct-copy game g
+                  [exit? #t])]
+    [else
+     (struct-copy game g
+                  [orbs (on-orbs-key (game-orbs g) n t key)])]))
+
+(define (on-orbs-key os n t key)
   (struct-copy orbs os
-               [player (on-player-key (orbs-player os) n t key)]
-               [enemy (orbs-enemy os)]))
+               [player (on-player-key (orbs-player os) n t key)]))
 
 (define (on-player-key o n t key)
   (define lkey (string-foldcase key))
@@ -41,10 +49,13 @@
 
 ;#############################################################################################################################################################################################
 
-(define (on-release os n t key)
+(define (on-release g n t key)
+    (struct-copy game g
+               [orbs (on-orbs-release (game-orbs g) n t key)]))
+
+(define (on-orbs-release os n t key)
     (struct-copy orbs os
-               [player (on-player-release (orbs-player os) n t key)]
-               [enemy (orbs-enemy os)]))
+               [player (on-player-release (orbs-player os) n t key)]))
 
 (define (on-player-release o n t key)
   (define lkey (string-foldcase key))

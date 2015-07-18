@@ -1,17 +1,18 @@
 #lang racket
-(require pict3d rackunit pict3d/universe mzlib/string "structures.rkt" "variables.rkt")
-(provide rotate-around-dir rotation-to-dir dir-to-rotation)
+(require pict3d rackunit pict3d/universe mzlib/string "structures.rkt")
+(provide rotate-around-dir rotation-to-dir dir-to-rotation rotate-up rotate-down rotate-left rotate-right)
 
 ;;rotates to-rotate around around
 ;;takes two dir and an angle -> one dir
 (define (rotate-around-dir around to-rotate ang)
+  (define normal-around (dir-normalize around))
   (rotate-around-coordinates
    (dir-dx to-rotate)
    (dir-dy to-rotate)
    (dir-dz to-rotate)
-   (dir-dx around)
-   (dir-dy around)
-   (dir-dz around)
+   (dir-dx normal-around)
+   (dir-dy normal-around)
+   (dir-dz normal-around)
    ang))
 
 ;;rotates point x y z around origin and u v w
@@ -42,7 +43,7 @@
     (base w z)
     (*
      (- (* u y) (* v x))
-     sang)))) ;;FIXME dir: expected rational coordinates; given +inf.0 +inf.0 +inf.0 bug
+     sang))))
 
 (module+ test (check-equal?
                (round-dir (rotate-around-coordinates 1 0 0 0 0 1 180))
@@ -53,8 +54,7 @@
 
 ;;takes dir and angle -> dir
 (define (rotation-to-dir dir ang)
-  (define-values (yaw pitch) (dir->angles dir))
-  (rotate-around-dir dir (angles->dir yaw (+ pitch 90)) ang))
+  (rotate-around-dir dir (rotate-up dir) ang))
 
 (module+ test (rotation-to-dir +x 0) -z)
 
@@ -73,3 +73,19 @@
      0]
     [else
      (- 360 a)]))
+
+(define (rotate-up dir [ang 90])
+  (define-values (yaw pitch) (dir->angles dir))
+  (angles->dir yaw (+ pitch ang)))
+
+(define (rotate-down dir [ang 90])
+  (define-values (yaw pitch) (dir->angles dir))
+  (angles->dir yaw (- pitch ang)))
+
+(define (rotate-right dir [ang 90])
+  (rotate-around-dir
+   dir (rotate-up dir) ang))
+
+(define (rotate-left dir [ang 90])
+  (rotate-around-dir
+   dir (rotate-up dir) (- ang)))

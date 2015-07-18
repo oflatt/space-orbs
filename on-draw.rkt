@@ -2,9 +2,12 @@
 (require pict3d rackunit pict3d/universe mzlib/string "frame-handling.rkt" "structures.rkt" "current-ang-and-pos.rkt" "variables.rkt" "landscape.rkt")
 (provide on-draw)
 
-(define MAX-SCREEN? 'beginning);we have to go through this because maximize only works if the screen has already been drawn once
+(define MAX-SCREEN 'beginning);we have to go through this because maximize only works if the screen has already been drawn once
 
-(define (on-draw os n t)
+(define (on-draw g n t)
+  (on-orbs-draw (game-orbs g) n t))
+
+(define (on-orbs-draw os n t)
   (define p (orbs-player os))
   (define draw
     (combine
@@ -13,11 +16,13 @@
      (draw-enemy (orbs-enemy os) t)
      (lights+camera (current-pos p t) (orb-dir p) (current-ang p t))))
   (cond
-    [(equal? MAX-SCREEN? 'beginning)
-     (set! MAX-SCREEN? #t)
+    [(equal? MAX-SCREEN 'beginning)
+     (set! MAX-SCREEN 'ready)
      draw]
-    [MAX-SCREEN?
+    [(equal? MAX-SCREEN 'ready)
      (maximize-screen)
+     (make-cursor-blank)
+     (set! MAX-SCREEN 'done)
      draw]
     [else draw]))
 

@@ -1,6 +1,6 @@
 #lang racket
 (require pict3d)
-(provide (struct-out movekey) (struct-out orb) (struct-out orbs) round-pos round-dir round-orbs-dir)
+(provide (struct-out movekey) (struct-out orb) (struct-out orbs) (struct-out game) round-pos round-dir round-orbs-dir)
 
 ;; key and the speed it is moving in that direction, pos is the pos it had when it was pressed
 (struct movekey (key speed) #:transparent)
@@ -10,6 +10,8 @@
 (struct orb (pos time movekeys dir ang shots reload-time) #:transparent)
 ;;player and enemy are both orbs
 (struct orbs (player enemy) #:transparent)
+;orbs is an orbs and exit? is wheather or not to stop the state and close the window
+(struct game (orbs exit?))
 
 (define (round-pos p)
   (pos

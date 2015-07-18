@@ -95,7 +95,7 @@
 ;;pd is d adjusted by 90 degrees for pitch, and yd is adjusted 90 degrees for yaw, and then they are adjusted for the angle the camera is turned
 (define (adjust-one-key mk d p dt ang)
   (define-values (yaw pitch) (dir->angles d))
-  (define pd (rotate-around-dir d (angles->dir yaw (+ pitch 90)) ang))
+  (define pd (rotate-around-dir d (rotate-up d) ang))
   (define yd (angles->dir (+ 90 yaw) ang))
   (cond
     [(equal? (movekey-key mk) "w")
