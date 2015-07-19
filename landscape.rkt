@@ -32,44 +32,43 @@
     (define H (* W 1/2))
     (append
      (pick-random-cubes empty NUM-OF-CUBES)
-     #;
      (list
       (set-emitted
-       (rectangle origin (pos 0 (- H) H))
-       (emitted "blue" 2))
+       (rectangle (pos -0.1 0 0) (pos 0 (- H) H))
+       (emitted "blue" 2));from spawn, left blue square
+     (set-emitted
+       (rectangle (pos (+ H 0.1) 0 0) (pos H (- H) H))
+       (emitted "blue" 2));right blue square
       (set-emitted
-       (rectangle (pos H 0 0) (pos H (- H) H))
-       (emitted "blue" 2))
+       (rectangle (pos 0 0 -0.1) (pos H (- H) 0))
+       (emitted "blue" 2));bottom blue square
       (set-emitted
-       (rectangle origin (pos H (- H) 0))
-       (emitted "blue" 2))
+       (rectangle (pos 0 0 (+ H 0.1)) (pos H (- H) H))
+       (emitted "blue" 2));top blue square
       (set-emitted
-       (rectangle (pos 0 0 H) (pos H (- H) H))
-       (emitted "blue" 2))
-      (set-emitted
-       (rectangle (pos 0 (- H) 0) (pos H (- H) H))
-       (emitted "green" 2))
+       (rectangle (pos 0 (- (- H) 0.1) 0) (pos H (- H) H))
+       (emitted "green" 2));back green square
       (set-color
-       (rectangle (pos H 0 0) (pos (* 2 W) 0 W))
-       (rgba "lightgreen"))
+       (rectangle (pos H -0.1 0) (pos (* 2 W) 0 W))
+       (rgba "lightgreen"));back green wall
       (set-color
-       (rectangle (pos 0 0 H) (pos H 0 W))
-       (rgba "lightgreen"))
+       (rectangle (pos 0 -0.1 H) (pos H 0 W))
+       (rgba "lightgreen"));extention of back green wall above spawn
       (set-color
-       (rectangle origin (pos 0 W W))
-       (rgba "red"))
+       (rectangle origin (pos -0.1 W W))
+       (rgba "red"));left red wall
       (set-color
-       (rectangle (pos 0 W 0) (pos (* 2 W) W W))
-       (rgba "blue"))
- #|   (set-color
-       (rectangle origin (pos (* 2 W) W W))
-       (rgba "yellow"))| FIXME: weird wall bug|#
+       (rectangle (pos 0 (+ W 0.1) 0) (pos (* 2 W) W W))
+       (rgba "blue"));front blue wall
       (set-color
-       (rectangle (pos 0 0 W) (pos (* 2 W) W W))
-       (rgba "purple"))
+       (rectangle (pos (+ (* 2 W) 0.1) 0 0) (pos (* 2 W) W W))
+       (rgba "yellow"));right yellow wall
       (set-color
-       (rectangle origin (pos (* 2 W) W 0))
-       (rgba "orange"))))))
+       (rectangle (pos 0 0 (+ 0.1 W)) (pos (* 2 W) W W))
+       (rgba "purple"));top purple wall
+      (set-color
+       (rectangle origin (pos (* 2 W) W -0.1))
+       (rgba "orange"))))));bottom orange wall
 
 (define FINAL-LANDSCAPE
   (freeze

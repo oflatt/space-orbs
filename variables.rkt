@@ -9,7 +9,7 @@
 (define DEFAULTPOS (pos 15 -15 15))
 (define DEFAULTPOS2 (pos WALL-SIZE (/ WALL-SIZE 2) (/ WALL-SIZE 2)))
 (define DEFAULTDIR +y)
-(define STARTING-SPEED 1/80)
+(define STARTING-SPEED 1/120)
 (define ROTATION-SPEED-MULTIPLIER 4)
 
 (define TESTORB (orb (pos 1 1 1) 5 '() (dir -1 0 0) 0 empty 0))
