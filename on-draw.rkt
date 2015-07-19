@@ -12,7 +12,7 @@
   (define draw
     (combine
      FINAL-LANDSCAPE
-     (apply combine (list-of-shots os))
+     (apply combine (list-of-shot-pictures os))
      (draw-enemy (orbs-enemy os) t)
      (lights+camera (current-pos p t) (orb-dir p) (current-ang p t))))
   (cond
@@ -26,10 +26,21 @@
      draw]
     [else draw]))
 
-(define (list-of-shots os)
+(define (list-of-shot-pictures os)
   (append
-   (orb-shots (orbs-player os))
-   (orb-shots (orbs-enemy os))))
+   (get-pics-from-shots
+    (orb-shots (orbs-player os)))
+   (get-pics-from-shots
+    (orb-shots (orbs-enemy os)))))
+
+(define (get-pics-from-shots l)
+  (cond
+    [(empty? l)
+     empty]
+    [else
+     (cons
+      (shot-pic (first l))
+      (get-pics-from-shots (rest l)))]))
 
 (define (draw-enemy o t)
   (sphere (current-pos o t) 1))

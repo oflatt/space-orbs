@@ -97,59 +97,42 @@
   (define-values (yaw pitch) (dir->angles d))
   (define pd (rotate-around-dir (rotate-up d) d ang))
   (define yd (angles->dir (+ 90 yaw) ang))
+  (define s (movekey-speed mk))
   (cond
     [(equal? (movekey-key mk) "w")
      (move-with-collision
       p
-      (pos
-       (+ (pos-x  p) (*  (movekey-speed mk) dt (dir-dx d)))
-       (+ (pos-y  p) (*  (movekey-speed mk) dt (dir-dy d)))
-       (+ (pos-z  p) (*  (movekey-speed mk) dt (dir-dz d))))
+      (pos+ p (dir-scale d (* dt s)))
       d
       dt)]
     [(equal? (movekey-key mk) "s")
      (move-with-collision
       p
-      (pos
-       (- (pos-x  p) (*  (movekey-speed mk) dt (dir-dx d)))
-       (- (pos-y  p) (*  (movekey-speed mk) dt (dir-dy d)))
-       (- (pos-z  p) (*  (movekey-speed mk) dt (dir-dz d))))
+      (pos+ p (dir-scale (dir-negate d) (* dt s)))
       (dir-negate d)
       dt)]
     [(equal? (movekey-key mk) "a")
      (move-with-collision
       p
-      (pos
-       (+ (pos-x  p) (*  (movekey-speed mk) dt (dir-dx yd)))
-       (+ (pos-y  p) (*  (movekey-speed mk) dt (dir-dy yd)))
-       (+ (pos-z  p) (*  (movekey-speed mk) dt (dir-dz yd))))
+      (pos+ p (dir-scale yd (* dt s)))
       yd
       dt)]
     [(equal? (movekey-key mk) "d")
      (move-with-collision
       p
-      (pos
-       (- (pos-x  p) (*  (movekey-speed mk) dt (dir-dx yd)))
-       (- (pos-y  p) (*  (movekey-speed mk) dt (dir-dy yd)))
-       (- (pos-z  p) (*  (movekey-speed mk) dt (dir-dz yd))))
+      (pos+ p (dir-scale (dir-negate yd) (* dt s)))
       (dir-negate yd)
       dt)]
     [(equal? (movekey-key mk) "shift")
      (move-with-collision
       p
-      (pos
-       (- (pos-x  p) (*  (movekey-speed mk) dt (dir-dx pd)))
-       (- (pos-y  p) (*  (movekey-speed mk) dt (dir-dy pd)))
-       (- (pos-z  p) (*  (movekey-speed mk) dt (dir-dz pd))))
+      (pos+ p (dir-scale (dir-negate pd) (* dt s)))
       (dir-negate pd)
       dt)]
     [(equal? (movekey-key mk) " ")
      (move-with-collision
       p
-      (pos
-       (+ (pos-x  p) (*  (movekey-speed mk) dt (dir-dx pd)))
-       (+ (pos-y  p) (*  (movekey-speed mk) dt (dir-dy pd)))
-       (+ (pos-z  p) (*  (movekey-speed mk) dt (dir-dz pd))))
+      (pos+ p (dir-scale pd (* dt s)))
       pd
       dt)]
     [else p]))
@@ -175,7 +158,7 @@
      sp]
     [(< (dir-dist (pos- op posc)) (dir-dist (pos- op sp)))
      op]
-    [else sp]))
+    [else sp]));;FIXME- bumpy when holding against a corner and going foward
 
 ;old position, point of collision, dir, and surface dir-> new pos
 (define (slide-against-surface op poc d sd dt)

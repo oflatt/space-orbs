@@ -32,7 +32,7 @@
        (cond
          [(equal? poc #f)
           empty]
-         [else (cons (rectangle (current-pos o t) poc) (orb-shots o))])])];;FIXME: this is what the player's shots look like
+         [else (cons (new-shot o poc t) (orb-shots o))])])]
     [else
      (struct-copy
       orb
@@ -41,6 +41,23 @@
       [time t]
       [dir (first n)]
       [ang (second n)])]))
+
+(define (new-shot o poc t)
+  (define cp (current-pos o t))
+  (define-values (yaw pitch) (dir->angles (orb-dir o)))
+  (define center (pos-between (current-pos o t) poc 1/2))
+  (define h (/ SHOT-WIDTH 2))
+  (shot
+   (move
+    (rotate-z
+     (rotate-y
+      (ellipsoid
+       (pos (- (- (/ (pos-dist cp poc) 2) 1)) (- h) (- h))
+       (pos (- (/ (pos-dist cp poc) 2) 1) h h))
+      (- pitch))
+     yaw)
+    (dir (pos-x center) (pos-y center) (pos-z center)))
+   t))
 
 (module+ test
   (check-equal?
