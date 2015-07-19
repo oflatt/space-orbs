@@ -105,7 +105,8 @@
        (+ (pos-x  p) (*  (movekey-speed mk) dt (dir-dx d)))
        (+ (pos-y  p) (*  (movekey-speed mk) dt (dir-dy d)))
        (+ (pos-z  p) (*  (movekey-speed mk) dt (dir-dz d))))
-      d)]
+      d
+      dt)]
     [(equal? (movekey-key mk) "s")
      (move-with-collision
       p
@@ -113,7 +114,8 @@
        (- (pos-x  p) (*  (movekey-speed mk) dt (dir-dx d)))
        (- (pos-y  p) (*  (movekey-speed mk) dt (dir-dy d)))
        (- (pos-z  p) (*  (movekey-speed mk) dt (dir-dz d))))
-      (dir-negate d))]
+      (dir-negate d)
+      dt)]
     [(equal? (movekey-key mk) "a")
      (move-with-collision
       p
@@ -121,7 +123,8 @@
        (+ (pos-x  p) (*  (movekey-speed mk) dt (dir-dx yd)))
        (+ (pos-y  p) (*  (movekey-speed mk) dt (dir-dy yd)))
        (+ (pos-z  p) (*  (movekey-speed mk) dt (dir-dz yd))))
-      yd)]
+      yd
+      dt)]
     [(equal? (movekey-key mk) "d")
      (move-with-collision
       p
@@ -129,7 +132,8 @@
        (- (pos-x  p) (*  (movekey-speed mk) dt (dir-dx yd)))
        (- (pos-y  p) (*  (movekey-speed mk) dt (dir-dy yd)))
        (- (pos-z  p) (*  (movekey-speed mk) dt (dir-dz yd))))
-      (dir-negate yd))]
+      (dir-negate yd)
+      dt)]
     [(equal? (movekey-key mk) "shift")
      (move-with-collision
       p
@@ -137,7 +141,8 @@
        (- (pos-x  p) (*  (movekey-speed mk) dt (dir-dx pd)))
        (- (pos-y  p) (*  (movekey-speed mk) dt (dir-dy pd)))
        (- (pos-z  p) (*  (movekey-speed mk) dt (dir-dz pd))))
-      (dir-negate pd))]
+      (dir-negate pd)
+      dt)]
     [(equal? (movekey-key mk) " ")
      (move-with-collision
       p
@@ -145,26 +150,40 @@
        (+ (pos-x  p) (*  (movekey-speed mk) dt (dir-dx pd)))
        (+ (pos-y  p) (*  (movekey-speed mk) dt (dir-dy pd)))
        (+ (pos-z  p) (*  (movekey-speed mk) dt (dir-dz pd))))
-      pd)]
+      pd
+      dt)]
     [else p]))
 
-;;original position, moved position, a dir, time, and an orb-> moved position with any collisions accounted for
-;;poc is pos of collision
-(define (move-with-collision op mp d)
-  (define poc (trace FINAL-LANDSCAPE op d))
+;;original position, moved position, a dir, and delta time-> moved position with any collisions accounted for
+;;poc is pos of collision and sd is surface dir, the dir perpendicular to the surface
+(define (move-with-collision op mp d dt)
+  (define-values (poc sd) (trace/normal FINAL-LANDSCAPE op d))
   (cond
     [(equal? poc #f)
      mp]
-    [(< (dir-dist (pos- op poc)) (dir-dist (pos- op mp)))
-     (define back-dir (pos- op poc))
-     (define dist (dir-dist back-dir))
-     (cond
-       [(zero? dist) poc]
-       [else
-        op
-        #;
-        (pos+ poc (dir-scale (dir-normalize back-dir) 1/2))])]
+    [(< (dir-dist (pos- op poc)) (dir-dist (pos- op mp)));if poc is closer (if there is a collision)
+     (try-to-slide op poc d sd dt)]
     [else mp]))
 
-(module+ test (check-equal? (move-with-collision (pos 50 0 0) (pos 51 0 0) +x)
-                            (pos 51 0 0)))
+;sp is a slided pos and posc is point of slide collision
+(define (try-to-slide op poc d sd dt)
+  (define sp (slide-against-surface op poc d sd dt))
+  (define slide-dir (rotate-around-dir (dir-cross d sd) sd 90))
+  (define posc (trace FINAL-LANDSCAPE op slide-dir))
+  (cond
+    [(equal? posc #f)
+     sp]
+    [(< (dir-dist (pos- op posc)) (dir-dist (pos- op sp)))
+     op]
+    [else sp]))
+
+;old position, point of collision, dir, and surface dir-> new pos
+(define (slide-against-surface op poc d sd dt)
+  (define slide-dir (rotate-around-dir (dir-cross d sd) sd 90))
+  (define slide-speed (* SLIDE-SPEED-MULTIPLIER (dir-to-rotation d sd)))
+  (pos
+   (+ (pos-x  op) (*  slide-speed dt (dir-dx slide-dir)))
+   (+ (pos-y  op) (*  slide-speed dt (dir-dy slide-dir)))
+   (+ (pos-z  op) (*  slide-speed dt (dir-dz slide-dir)))))
+
+;note- write tests for move-with-collision!
