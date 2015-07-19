@@ -4,7 +4,7 @@
 
 ;;rotates to-rotate around around
 ;;takes two dir and an angle -> one dir
-(define (rotate-around-dir around to-rotate ang)
+(define (rotate-around-dir to-rotate around ang)
   (define normal-around (dir-normalize around))
   (rotate-around-coordinates
    (dir-dx to-rotate)
@@ -53,8 +53,8 @@
                (dir 0 0 1)))
 
 ;;takes dir and angle -> dir
-(define (rotation-to-dir dir ang)
-  (rotate-around-dir dir (rotate-up dir) ang))
+(define (rotation-to-dir d ang)
+  (rotate-around-dir (rotate-up d) d ang))
 
 (module+ test (rotation-to-dir +x 0) -z)
 
@@ -74,18 +74,18 @@
     [else
      (- 360 a)]))
 
-(define (rotate-up dir [ang 90])
-  (define-values (yaw pitch) (dir->angles dir))
+(define (rotate-up d [ang 90])
+  (define-values (yaw pitch) (dir->angles d))
   (angles->dir yaw (+ pitch ang)))
 
-(define (rotate-down dir [ang 90])
-  (define-values (yaw pitch) (dir->angles dir))
+(define (rotate-down d [ang 90])
+  (define-values (yaw pitch) (dir->angles d))
   (angles->dir yaw (- pitch ang)))
 
-(define (rotate-right dir [ang 90])
+(define (rotate-right d [ang 90])
   (rotate-around-dir
-   dir (rotate-up dir) ang))
+   (rotate-up d) d ang))
 
-(define (rotate-left dir [ang 90])
+(define (rotate-left d [ang 90])
   (rotate-around-dir
-   dir (rotate-up dir) (- ang)))
+   (rotate-up d) d (- ang)))

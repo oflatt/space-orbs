@@ -32,6 +32,7 @@
     (define H (* W 1/2))
     (append
      (pick-random-cubes empty NUM-OF-CUBES)
+     #;
      (list
       (set-emitted
        (rectangle origin (pos 0 (- H) H))

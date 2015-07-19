@@ -73,14 +73,14 @@
 (define (adjust-for-mouse-y l o x y t)
   (define dir (first l))
   (define d (rotate-right dir (second l)))
-  (define pd (rotate-around-dir dir d 90))
+  (define pd (rotate-around-dir d dir 90))
   (cond
     [(equal? y 0)
      l]
     [else
      (define new-dir
-       (rotate-around-dir pd
-                          dir
+       (rotate-around-dir dir
+                          pd
                           (/ (- y) 2)))
      (list
       new-dir
@@ -98,8 +98,8 @@
       (current-ang o t))]
     [else
      (define new-dir
-       (rotate-around-dir pd
-                          dir
+       (rotate-around-dir dir
+                          pd
                           (/ (- x) 2)))
      (list
       new-dir
