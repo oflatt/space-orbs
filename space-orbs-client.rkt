@@ -8,7 +8,7 @@
 
 (big-bang3d/big-crunch
  (game
-  (orbs (orb DEFAULTPOS 0 '() DEFAULTDIR 0 empty 0) (orb DEFAULTPOS2 0 '() DEFAULTDIR 0 empty 0))
+  (orbs (orb DEFAULTPOS 0 '() DEFAULTDIR 0 empty 0 "Bob" "blue") (orb DEFAULTPOS2 0 '() DEFAULTDIR 0 empty 0 "Pie" "red"))
   #f)
  #:name "Space Orbs"
  #:on-draw on-draw

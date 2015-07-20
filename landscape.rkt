@@ -1,6 +1,12 @@
 #lang racket
 (require pict3d "variables.rkt")
-(provide FINAL-LANDSCAPE pick-random-lights LIGHTS-LIST)
+(provide FINAL-LANDSCAPE pick-random-lights LIGHTS-LIST TEST-LAND)
+
+(define TEST-LAND
+  (freeze
+   (combine
+    (rectangle (pos 0 10 0) (pos 10 20 10))
+    (rectangle (pos 10 0 0) (pos 20 10 10)))))
 
 ;list of cubes and number of cubes to make-> list of cubes
 (define (pick-random-cubes l n)

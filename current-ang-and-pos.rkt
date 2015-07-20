@@ -9,25 +9,31 @@
 (module+ test (check-equal?
                (current-ang TESTORB 50)
                0))
+
 (module+ test (check-equal?
                (current-ang (struct-copy orb TESTORB
-                                         [movekeys (list (movekey "q" 1/80))])
+                                         [movekeys (list (movekey "q" STARTING-SPEED))])
                             6)
                (- (* ROTATION-SPEED-MULTIPLIER STARTING-SPEED))))
+(module+ test (check-equal?
+               (current-ang (struct-copy orb TESTORB
+                                         [movekeys empty])
+                            6)
+               0))
 
-(define (adjust-ang ang ms at)
+(define (adjust-ang ang ms dt)
   (cond
     [(empty? ms)
      ang]
     [else
-     (adjust-ang (adjust-one-ang-key ang (first ms) at) (rest ms) at)]))
+     (adjust-ang (adjust-one-ang-key ang (first ms) dt) (rest ms) dt)]))
 
-(define (adjust-one-ang-key ang m at)
+(define (adjust-one-ang-key ang m dt)
   (cond
     [(equal? (movekey-key m) "q")
-     (- ang (* at (movekey-speed m) ROTATION-SPEED-MULTIPLIER))]
+     (- ang (* dt (movekey-speed m) ROTATION-SPEED-MULTIPLIER))]
     [(equal? (movekey-key m) "e")
-     (+ ang (* at (movekey-speed m) ROTATION-SPEED-MULTIPLIER))]
+     (+ ang (* dt (movekey-speed m) ROTATION-SPEED-MULTIPLIER))]
     [else ang]))
 
 ;;takes an orb and time and gives current position of the orb
@@ -104,55 +110,75 @@
       p
       (pos+ p (dir-scale d (* dt s)))
       d
-      dt)]
+      dt
+      FINAL-LANDSCAPE)]
     [(equal? (movekey-key mk) "s")
      (move-with-collision
       p
       (pos+ p (dir-scale (dir-negate d) (* dt s)))
       (dir-negate d)
-      dt)]
+      dt
+      FINAL-LANDSCAPE)]
     [(equal? (movekey-key mk) "a")
      (move-with-collision
       p
       (pos+ p (dir-scale yd (* dt s)))
       yd
-      dt)]
+      dt
+      FINAL-LANDSCAPE)]
     [(equal? (movekey-key mk) "d")
      (move-with-collision
       p
       (pos+ p (dir-scale (dir-negate yd) (* dt s)))
       (dir-negate yd)
-      dt)]
+      dt
+      FINAL-LANDSCAPE)]
     [(equal? (movekey-key mk) "shift")
      (move-with-collision
       p
       (pos+ p (dir-scale (dir-negate pd) (* dt s)))
       (dir-negate pd)
-      dt)]
+      dt
+      FINAL-LANDSCAPE)]
     [(equal? (movekey-key mk) " ")
      (move-with-collision
       p
       (pos+ p (dir-scale pd (* dt s)))
       pd
-      dt)]
+      dt
+      FINAL-LANDSCAPE)]
     [else p]))
 
 ;;original position, moved position, a dir, and delta time-> moved position with any collisions accounted for
 ;;poc is pos of collision and sd is surface dir, the dir perpendicular to the surface
-(define (move-with-collision op mp d dt)
-  (define-values (poc sd) (trace/normal FINAL-LANDSCAPE op d))
+;L is the landscape
+(define (move-with-collision op mp d dt L)
+  (define-values (poc sd) (trace/normal L op d))
   (cond
     [(equal? poc #f)
      mp]
     [(< (dir-dist (pos- op poc)) (dir-dist (pos- op mp)));if poc is closer (if there is a collision)
-     (try-to-slide op poc d sd dt)]
+     (try-to-slide op poc d sd dt L)]
     [else mp]))
 
-;sp is a slided pos and posc is point of slide collision
-(define (try-to-slide op poc d sd dt)
+(module+ test
+  (check-equal?
+   (move-with-collision origin (pos 1 0 0) +x 1 TEST-LAND)
+   (pos 1 0 0)))
+(module+ test
+  (define test (round-pos (move-with-collision (pos 0 9.5 0) (pos 20.0 -20 0.7071) (dir 0.7071 0.7071 0.0) 1 TEST-LAND)))
+  (check-equal?
+   (cond
+     [(equal? (pos-z test) -0.0)
+      (pos (pos-x test) (pos-y test) 0)]
+     [else test])
+   (round-pos (pos SLIDE-SPEED 9.5 0))))
+
+;sp is a slided pos and posc is point of slide collisionrf
+(define (try-to-slide op poc d sd dt L)
   (define sp (slide-against-surface op poc d sd dt))
   (define slide-dir (rotate-around-dir (dir-cross d sd) sd 90))
-  (define posc (trace FINAL-LANDSCAPE op slide-dir))
+  (define posc (trace L op slide-dir))
   (cond
     [(equal? posc #f)
      sp]
@@ -162,11 +188,10 @@
 
 ;old position, point of collision, dir, and surface dir-> new pos
 (define (slide-against-surface op poc d sd dt)
-  (define slide-dir (rotate-around-dir (dir-cross d sd) sd 90))
-  (define slide-speed (* SLIDE-SPEED-MULTIPLIER (dir-to-rotation d sd)))
-  (pos
-   (+ (pos-x  op) (*  slide-speed dt (dir-dx slide-dir)))
-   (+ (pos-y  op) (*  slide-speed dt (dir-dy slide-dir)))
-   (+ (pos-z  op) (*  slide-speed dt (dir-dz slide-dir)))))
-
-;note- write tests for move-with-collision!
+  (define slide-dir (dir-normalize (rotate-around-dir (dir-cross d sd) sd 90)))
+  (define slide-speed
+    (cond
+      [(> (dir-to-rotation d sd) 5)
+       SLIDE-SPEED]
+      [else 0]))
+  (pos+ op (dir-scale slide-dir (* dt slide-speed))))

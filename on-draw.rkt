@@ -43,7 +43,7 @@
       (get-pics-from-shots (rest l)))]))
 
 (define (draw-enemy o t)
-  (sphere (current-pos o t) 1))
+  (sphere (current-pos o t) 2))
 
 (define (lights+camera currentpos d ang)
   (combine (apply combine

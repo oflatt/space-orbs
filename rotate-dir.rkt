@@ -3,6 +3,7 @@
 (provide rotate-around-dir rotation-to-dir dir-to-rotation rotate-up rotate-down rotate-left rotate-right)
 
 ;;rotates to-rotate around around
+;;It rotates to-rotate couterclockwise looking in the direction of around
 ;;takes two dir and an angle -> one dir
 (define (rotate-around-dir to-rotate around ang)
   (define normal-around (dir-normalize around))
@@ -58,6 +59,7 @@
 
 (module+ test (rotation-to-dir +x 0) -z)
 
+;gives angle between two dir
 (define (dir-to-rotation basedir rotdir)
   (define downdir (rotation-to-dir basedir 0))
   (define leftdir (rotation-to-dir basedir 90))
@@ -78,14 +80,49 @@
   (define-values (yaw pitch) (dir->angles d))
   (angles->dir yaw (+ pitch ang)))
 
+(module+ test
+  (check-equal?
+   (round-dir (rotate-up +x))
+   +z))
+(module+ test
+  (round-dir (rotate-up -y 45))
+  (dir 0.0 -0.7071 0.7071))
+
 (define (rotate-down d [ang 90])
   (define-values (yaw pitch) (dir->angles d))
   (angles->dir yaw (- pitch ang)))
 
+(module+ test
+  (check-equal?
+   (round-dir (rotate-down +x))
+   -z))
+(module+ test
+  (round-dir (rotate-down -y 45))
+  (dir 0.0 -0.7071 -0.7071))
+
 (define (rotate-right d [ang 90])
   (rotate-around-dir
-   (rotate-up d) d ang))
+   d (rotate-up d) (- ang)))
+
+(module+ test
+  (check-equal?
+   (round-dir (rotate-right +x))
+   -y))
+(module+ test
+  (round-dir (rotate-right -y 45))
+  (dir -0.7071 -0.7071 0.0))
 
 (define (rotate-left d [ang 90])
   (rotate-around-dir
-   (rotate-up d) d (- ang)))
+   d (rotate-up d) ang))
+
+(module+ test
+  (check-equal?
+   (round-dir (rotate-left +x))
+   +y))
+(module+ test
+  (round-dir (rotate-left -y 45))
+  (dir 0.7071 -0.7071 0.0))
+(module+ test
+  (round-dir (rotate-right (rotate-left +x 45) 45))
+  +x)
