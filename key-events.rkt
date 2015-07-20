@@ -1,5 +1,5 @@
 #lang racket
-(require rackunit pict3d "structures.rkt" "current-ang-and-pos.rkt" "variables.rkt" "big-crunch.rkt")
+(require rackunit pict3d "structures.rkt" "current-roll-and-pos.rkt" "variables.rkt" "big-crunch.rkt")
 (provide on-key on-release)
 
 (define (find-this-movekey key ms)
@@ -38,7 +38,7 @@
                   [pos (current-pos o t)]
                   [time t]
                   [movekeys (cons (movekey lkey STARTING-SPEED)  (orb-movekeys o))]
-                  [ang (current-ang o t)])]
+                  [roll (current-roll o t)])]
     [else o]))
 
 (module+ test (check-equal? (on-player-key (struct-copy orb TESTORB [pos (pos 2 2 2)] [movekeys (list (movekey " " 1))]) "n" 30 " ")
@@ -64,7 +64,7 @@
                [pos (current-pos o t)]
                [time t]
                [movekeys (remove-this-movekey (orb-movekeys o) lkey)]
-               [ang (current-ang o t)]))
+               [roll (current-roll o t)]))
 
 (module+ test (check-equal? (on-player-release (struct-copy orb TESTORB [pos (pos 2 2 2)] [movekeys (list (movekey " " 1))]) "n" 5 " ")
               (struct-copy orb TESTORB [pos (pos 2 2 2)] [movekeys empty])))

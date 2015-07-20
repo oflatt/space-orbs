@@ -1,5 +1,5 @@
 #lang racket
-(require pict3d rackunit pict3d/universe mzlib/string "frame-handling.rkt" "structures.rkt" "current-ang-and-pos.rkt" "variables.rkt" "landscape.rkt")
+(require pict3d rackunit pict3d/universe mzlib/string "frame-handling.rkt" "structures.rkt" "current-roll-and-pos.rkt" "variables.rkt" "landscape.rkt")
 (provide on-draw)
 
 (define MAX-SCREEN 'beginning);we have to go through this because maximize only works if the screen has already been drawn once
@@ -14,7 +14,7 @@
      FINAL-LANDSCAPE
      (apply combine (list-of-shot-pictures os))
      (draw-enemy (orbs-enemy os) t)
-     (lights+camera (current-pos p t) (orb-dir p) (current-ang p t))))
+     (lights+camera (current-pos p t) (orb-dir p) (current-roll p t))))
   (cond
     [(equal? MAX-SCREEN 'beginning)
      (set! MAX-SCREEN 'ready)

@@ -7,10 +7,10 @@
 ;pict3d and time in milliseconds when it was shot
 (struct shot (pic time) #:transparent)
 ;;position and time at last key change.list of moves. Pos is a list of 3 coordinates that is current. (continue on next line)
-;;Dir is direction it is pointing and ang is how much it is rotated from normally. mx and my are mouse coordinates
+;;Dir is direction it is pointing and roll is how much the camera is rotated. mx and my are mouse coordinates
 ;;shots is a list of shots to draw and reload-time is time in milliseconds before the player may shoot again
 ;;name and color are strings
-(struct orb (pos time movekeys dir ang shots reload-time name color) #:transparent)
+(struct orb (pos time movekeys dir roll shots reload-time name color) #:transparent)
 ;;player and enemy are both orbs
 (struct orbs (player enemy) #:transparent)
 ;orbs is an orbs and exit? is wheather or not to stop the state and close the window

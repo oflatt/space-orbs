@@ -1,5 +1,5 @@
 #lang racket
-(require pict3d rackunit "frame-handling.rkt" "structures.rkt" "landscape.rkt" "current-ang-and-pos.rkt" "rotate-dir.rkt" "variables.rkt")
+(require pict3d rackunit "frame-handling.rkt" "structures.rkt" "landscape.rkt" "current-roll-and-pos.rkt" "rotate-dir.rkt" "variables.rkt")
 (provide on-mouse)
 
 (define BEGINNING? #t);sets the mous to the middle initially without moving the view
@@ -40,7 +40,7 @@
       [pos (current-pos o t)]
       [time t]
       [dir (first n)]
-      [ang (second n)])]))
+      [roll (second n)])]))
 
 (define (new-shot o poc t)
   (define cp (current-pos o t))
@@ -76,7 +76,6 @@
   (define-values (oldyaw oldpitch) (dir->angles (orb-dir o)))
   (adjust-for-mouse-y
    (adjust-for-mouse-x
-    (orb-dir o)
     o
     x
     y
@@ -88,37 +87,37 @@
 
 ;;takes list of a dir and ang and o x y t-> list of dir and ang
 (define (adjust-for-mouse-y l o x y t)
-  (define dir (first l))
-  (define d (rotate-right dir (second l)))
-  (define pd (rotate-around-dir d dir 90))
+  (define d (first l))
+  (define pd (rotate-right d #:roll (second l)))
   (cond
     [(equal? y 0)
      l]
     [else
      (define new-dir
-       (rotate-around-dir dir
+       (rotate-around-dir d
                           pd
                           (/ (- y) 2)))
      (list
       new-dir
       ;; Find the new angle to keep pd the same next time:
-      (- (dir-to-rotation new-dir pd) 90))]))
+      (- (dir-to-roll new-dir pd) 90))]))
 
 ;;yaw is rotation about z axis, so we compare x positions
 ;;gives a list of dir and ang
-(define (adjust-for-mouse-x dir o x y t)
-  (define pd (rotate-right (orb-dir o) (current-ang o t)))
+(define (adjust-for-mouse-x o x y t)
+  (define d (orb-dir o))
+  (define pd (rotate-up (orb-dir o) #:roll (current-roll o t)))
   (cond
     [(equal? x 0)
      (list
-      dir
-      (current-ang o t))]
+      d
+      (current-roll o t))]
     [else
      (define new-dir
-       (rotate-around-dir dir
+       (rotate-around-dir d
                           pd
                           (/ (- x) 2)))
      (list
       new-dir
-      ;; Find the new angle to keep pd the same next time:
-      (dir-to-rotation new-dir pd))]))
+      ;; Find the new roll to keep pd the same next time:
+      (dir-to-roll new-dir pd))]))

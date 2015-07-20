@@ -1,9 +1,9 @@
 #lang racket
 (require pict3d rackunit pict3d/universe mzlib/string "structures.rkt")
-(provide rotate-around-dir rotation-to-dir dir-to-rotation rotate-up rotate-down rotate-left rotate-right)
+(provide rotate-around-dir roll-to-dir dir-to-roll rotate-up rotate-down rotate-left rotate-right)
 
 ;;rotates to-rotate around around
-;;It rotates to-rotate couterclockwise looking in the direction of around
+;;It rotates to-rotate couterclockwise looking in the direction of around (clockwise looking in the opposite of around)
 ;;takes two dir and an angle -> one dir
 (define (rotate-around-dir to-rotate around ang)
   (define normal-around (dir-normalize around))
@@ -54,15 +54,13 @@
                (dir 0 0 1)))
 
 ;;takes dir and angle -> dir
-(define (rotation-to-dir d ang)
-  (rotate-around-dir (rotate-up d) d ang))
-
-(module+ test (rotation-to-dir +x 0) -z)
+(define (roll-to-dir d roll)
+  (rotate-up d #:roll roll))
 
 ;gives angle between two dir
-(define (dir-to-rotation basedir rotdir)
-  (define downdir (rotation-to-dir basedir 0))
-  (define leftdir (rotation-to-dir basedir 90))
+(define (dir-to-roll basedir rotdir)
+  (define downdir (roll-to-dir basedir 0))
+  (define leftdir (roll-to-dir basedir 90))
   (define a
     (*
      (asin (min 1.0 (/ (dir-dist (dir- downdir rotdir)) 2)))
@@ -76,53 +74,64 @@
     [else
      (- 360 a)]))
 
-(define (rotate-up d [ang 90])
+;takes the dir to rotate
+;can take ang and roll (how much the camera is turned
+(define (rotate-up d [ang 90] #:roll [roll 0])
   (define-values (yaw pitch) (dir->angles d))
-  (angles->dir yaw (+ pitch ang)))
+  (rotate-around-dir (angles->dir yaw (+ pitch ang)) d roll))
 
 (module+ test
   (check-equal?
    (round-dir (rotate-up +x))
    +z))
 (module+ test
-  (round-dir (rotate-up -y 45))
-  (dir 0.0 -0.7071 0.7071))
+  (check-equal?
+   (round-dir (rotate-up -y 45))
+   (dir 0.0 -0.7071 0.7071)))
 
-(define (rotate-down d [ang 90])
+(define (rotate-down d [ang 90] #:roll [roll 0])
   (define-values (yaw pitch) (dir->angles d))
-  (angles->dir yaw (- pitch ang)))
+  (rotate-around-dir (angles->dir yaw (- pitch ang)) d roll))
 
 (module+ test
   (check-equal?
    (round-dir (rotate-down +x))
    -z))
 (module+ test
-  (round-dir (rotate-down -y 45))
-  (dir 0.0 -0.7071 -0.7071))
+  (check-equal?
+   (round-dir (rotate-down -y 45))
+   (dir 0.0 -0.7071 -0.7071)))
 
-(define (rotate-right d [ang 90])
+(define (rotate-right d [ang 90] #:roll [roll 0])
   (rotate-around-dir
-   d (rotate-up d) (- ang)))
+   d (rotate-up d #:roll roll) (- ang)))
 
 (module+ test
   (check-equal?
    (round-dir (rotate-right +x))
    -y))
 (module+ test
-  (round-dir (rotate-right -y 45))
-  (dir -0.7071 -0.7071 0.0))
+  (check-equal?
+   (round-dir (rotate-right -y 45))
+   (dir -0.7071 -0.7071 0.0)))
 
-(define (rotate-left d [ang 90])
+(define (rotate-left d [ang 90] #:roll [roll 0])
   (rotate-around-dir
-   d (rotate-up d) ang))
+   d (rotate-up d #:roll roll) ang))
 
 (module+ test
   (check-equal?
    (round-dir (rotate-left +x))
    +y))
 (module+ test
-  (round-dir (rotate-left -y 45))
-  (dir 0.7071 -0.7071 0.0))
+  (check-equal?
+   (round-dir (rotate-left -y 45))
+   (dir 0.7071 -0.7071 0.0)))
 (module+ test
-  (round-dir (rotate-right (rotate-left +x 45) 45))
-  +x)
+  (check-equal?
+   (round-dir (rotate-left +x #:roll 90))
+   +z))
+(module+ test
+  (check-equal?
+   (round-dir (rotate-right (rotate-left +x 45) 45))
+   +x))

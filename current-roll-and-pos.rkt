@@ -1,22 +1,22 @@
 #lang racket
 (require pict3d rackunit pict3d/universe mzlib/string "structures.rkt" "variables.rkt" "rotate-dir.rkt" "landscape.rkt")
-(provide current-pos current-ang)
+(provide current-pos current-roll)
 
-(define (current-ang o t)
+(define (current-roll o t)
   (define ms (orb-movekeys o))
-  (adjust-ang (orb-ang o) ms (- t (orb-time o))))
+  (adjust-ang (orb-roll o) ms (- t (orb-time o))))
 
 (module+ test (check-equal?
-               (current-ang TESTORB 50)
+               (current-roll TESTORB 50)
                0))
 
 (module+ test (check-equal?
-               (current-ang (struct-copy orb TESTORB
+               (current-roll (struct-copy orb TESTORB
                                          [movekeys (list (movekey "q" STARTING-SPEED))])
                             6)
                (- (* ROTATION-SPEED-MULTIPLIER STARTING-SPEED))))
 (module+ test (check-equal?
-               (current-ang (struct-copy orb TESTORB
+               (current-roll (struct-copy orb TESTORB
                                          [movekeys empty])
                             6)
                0))
@@ -43,7 +43,7 @@
     [(equal? ms '())
      (orb-pos o)]
     [else
-     (adjust-pos (orb-movekeys o) (orb-dir o) (orb-pos o) (- t (orb-time o)) t (current-ang o t))]))
+     (adjust-pos (orb-movekeys o) (orb-dir o) (orb-pos o) (- t (orb-time o)) t (current-roll o t))]))
 
 (module+ test (check-equal?
                (current-pos TESTORB 8)
@@ -191,7 +191,7 @@
   (define slide-dir (dir-normalize (rotate-around-dir (dir-cross d sd) sd 90)))
   (define slide-speed
     (cond
-      [(> (dir-to-rotation d sd) 5)
+      [(> (dir-to-roll d sd) 5)
        SLIDE-SPEED]
       [else 0]))
   (pos+ op (dir-scale slide-dir (* dt slide-speed))))
