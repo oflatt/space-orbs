@@ -4,8 +4,9 @@
 
 ;; key and the speed it is moving in that direction, pos is the pos it had when it was pressed
 (struct movekey (key speed) #:transparent)
-;pict3d and time in milliseconds when it was shot
-(struct shot (pic time) #:transparent)
+;corner 1 and 2 are pos for drawing and pos is where to move it
+;time is time in milliseconds when it was shot
+(struct shot (corner1 corner2 pos yaw pitch time) #:transparent)
 ;;position and time at last key change.list of moves. Pos is a list of 3 coordinates that is current. (continue on next line)
 ;;Dir is direction it is pointing and roll is how much the camera is rotated. mx and my are mouse coordinates
 ;;shots is a list of shots to draw and reload-time is time in milliseconds before the player may shoot again

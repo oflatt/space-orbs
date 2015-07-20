@@ -48,15 +48,17 @@
   (define center (pos-between (current-pos o t) poc 1/2))
   (define h (/ SHOT-WIDTH 2))
   (shot
-   (move
-    (rotate-z
-     (rotate-y
-      (ellipsoid
-       (pos (- (- (/ (pos-dist cp poc) 2) 1)) (- h) (- h))
-       (pos (- (/ (pos-dist cp poc) 2) 1) h h))
-      (- pitch))
-     yaw)
-    (dir (pos-x center) (pos-y center) (pos-z center)))
+   (pos
+    (- h)
+    (- h)
+    (- (- (/ (pos-dist cp poc) 2) 1)))
+   (pos
+    h
+    h
+    (- (/ (pos-dist cp poc) 2) 1))
+   center
+   yaw
+   pitch
    t))
 
 (module+ test

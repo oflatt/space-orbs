@@ -13,7 +13,7 @@
 (define SLIDE-SPEED 1/150)
 (define ROTATION-SPEED-MULTIPLIER 4)
 
-(define SHOT-LIFE 1000);in milliseconds
+(define SHOT-LIFE 700);in milliseconds
 (define SHOT-WIDTH 1);radius of shot
 
 (define TESTORB (orb (pos 1 1 1) 5 '() (dir -1 0 0) 0 empty 0 "Bob" "blue"))
