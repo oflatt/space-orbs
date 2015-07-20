@@ -102,7 +102,7 @@
      (list
       new-dir
       ;; Find the new angle to keep pd the same next time:
-      (- (dir-to-roll new-dir pd) 90))]))
+      (- (dir-up-to-roll new-dir pd) 90))]))
 
 ;;yaw is rotation about z axis, so we compare x positions
 ;;gives a list of dir and ang
@@ -122,4 +122,4 @@
      (list
       new-dir
       ;; Find the new roll to keep pd the same next time:
-      (dir-to-roll new-dir pd))]))
+      (dir-up-to-roll new-dir pd))]))

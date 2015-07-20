@@ -191,7 +191,7 @@
   (define slide-dir (dir-normalize (rotate-around-dir (dir-cross d sd) sd 90)))
   (define slide-speed
     (cond
-      [(> (dir-to-roll d sd) 5)
+      [(> (dir-up-to-roll d sd) 5)
        SLIDE-SPEED]
       [else 0]))
   (pos+ op (dir-scale slide-dir (* dt slide-speed))))
