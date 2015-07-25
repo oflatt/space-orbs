@@ -1,5 +1,5 @@
 #lang racket
-(require pict3d rackunit "frame-handling.rkt" "structures.rkt" "landscape.rkt" "current-roll-and-pos.rkt" "rotate-dir.rkt" "variables.rkt")
+(require pict3d rackunit "frame-handling.rkt" "structures.rkt" "landscape.rkt" "current-roll-and-pos.rkt" "rotate-dir.rkt" "variables.rkt" "shots.rkt")
 (provide on-mouse)
 
 (define BEGINNING? #t);sets the mous to the middle initially without moving the view
@@ -41,25 +41,6 @@
       [time t]
       [dir (first n)]
       [roll (second n)])]))
-
-(define (new-shot o poc t)
-  (define cp (current-pos o t))
-  (define-values (yaw pitch) (dir->angles (orb-dir o)))
-  (define center (pos-between (current-pos o t) poc 1/2))
-  (define h (/ SHOT-WIDTH 2))
-  (shot
-   (pos
-    (- h)
-    (- h)
-    (- (- (/ (pos-dist cp poc) 2) 1)))
-   (pos
-    h
-    h
-    (- (/ (pos-dist cp poc) 2) 1))
-   center
-   yaw
-   pitch
-   t))
 
 (module+ test
   (check-equal?

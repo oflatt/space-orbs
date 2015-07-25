@@ -1,30 +1,6 @@
 #lang racket
 (require pict3d rackunit "frame-handling.rkt" "structures.rkt" "current-roll-and-pos.rkt" "variables.rkt" "landscape.rkt")
-(provide on-draw)
-
-(define MAX-SCREEN 'beginning);maximize only works if the screen has already been drawn once
-
-(define (on-draw g n t)
-  (on-orbs-draw (game-orbs g) n t))
-
-(define (on-orbs-draw os n t)
-  (define p (orbs-player os))
-  (define draw
-    (combine
-     FINAL-LANDSCAPE
-     (apply combine (list-of-shot-pictures os t))
-     (draw-enemy (orbs-enemy os) t)
-     (lights+camera (current-pos p t) (orb-dir p) (current-roll p t))))
-  (cond
-    [(equal? MAX-SCREEN 'beginning)
-     (set! MAX-SCREEN 'ready)
-     draw]
-    [(equal? MAX-SCREEN 'ready)
-     (maximize-screen)
-     (make-cursor-blank)
-     (set! MAX-SCREEN 'done)
-     draw]
-    [else draw]))
+(provide list-of-shot-pictures new-shot)
 
 (define (list-of-shot-pictures os t)
   (define player-shots (kill-old-shots (orb-shots (orbs-player os)) t))
@@ -77,17 +53,24 @@
       (+ 90 (- pitch)))
      yaw)
     (dir (pos-x p) (pos-y p) (pos-z p)))))
-  
-(define (draw-enemy o t)
-  (sphere (current-pos o t) 2))
 
-(define (lights+camera currentpos d ang)
-  (combine (apply combine
-                  (cond
-                    [DISCO?
-                     (pick-random-lights empty NUM-OF-LIGHTS)]
-                    [else LIGHTS-LIST]))
-           (basis 'camera (point-at
-                           currentpos
-                           d
-                           #:angle ang))))
+
+
+(define (new-shot o poc t)
+  (define cp (current-pos o t))
+  (define-values (yaw pitch) (dir->angles (orb-dir o)))
+  (define center (pos-between (current-pos o t) poc 1/2))
+  (define h (/ SHOT-WIDTH 2))
+  (shot
+   (pos
+    (- h)
+    (- h)
+    (- (- (/ (pos-dist cp poc) 2) 1)))
+   (pos
+    h
+    h
+    (- (/ (pos-dist cp poc) 2) 1))
+   center
+   yaw
+   pitch
+   t))
