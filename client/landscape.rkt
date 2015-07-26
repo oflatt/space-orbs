@@ -32,12 +32,12 @@
 (define LIGHTS-LIST
   (pick-random-lights empty NUM-OF-LIGHTS))
 
-(define LANDSCAPE-LIST
+(define (make-landscape cube-list)
   (let ()
     (define W WALL-SIZE)
     (define H (* W 1/2))
     (append
-     (pick-random-cubes empty NUM-OF-CUBES)
+     cube-list
      (list
       (set-emitted
        (rectangle (pos -0.1 0 0) (pos 0 (- H) H))
@@ -78,4 +78,4 @@
 
 (define FINAL-LANDSCAPE
   (freeze
-   (apply combine LANDSCAPE-LIST)))
+   (apply combine (make-landscape (pick-random-cubes empty NUM-OF-CUBES)))))

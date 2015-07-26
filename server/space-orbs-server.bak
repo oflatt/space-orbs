@@ -1,0 +1,24 @@
+#lang racket
+
+
+
+(define (value->bytes v)
+  (define o (open-output-bytes))
+  (write v o)
+  (get-output-bytes o))
+
+(struct posn (x y) #:prefab)
+
+
+(define (bytes->value bstr)
+  (define i (open-input-bytes bstr))
+  (read i))
+
+(bytes->value (value->bytes (posn 6 7.8)))
+
+(posn 6 7.8)
+
+(define bstr (make-bytes 1024))
+(subbytes bstr 0 57)
+
+
