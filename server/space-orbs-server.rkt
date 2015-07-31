@@ -20,16 +20,36 @@
      udps
      byte-bucket))
   (define r
-    (take-out-of-list cs (client hostname port)))
+    (take-out-of-list (clients-rest cs) (client hostname port)))
+  (define m (clients-master cs))
   (cond
-    [(equal? (length cs) (length r))
+    [(equal? m #f)
+     (server-loop (clients (client hostname port) (clients-rest cs)))]
+    [(and
+      (not (equal? (client hostname port) m))
+      (empty? (clients-rest cs)))
+     (println "s")
+     (udp-send-to udps
+                  (client-hostname m)
+                  (client-port m)
+                  (value->bytes "start-as-master"))
      (server-loop
-      (cons
-       (client hostname port)
-       cs))]
+      (add-new-client cs (client hostname port)))]
+    [(and
+      (equal? (length (clients-rest cs)) (length r))
+      (not (equal? (client hostname port) m)))
+     (server-loop
+      (add-new-client cs (client hostname port)))]
     [else
      (send-this r (subbytes byte-bucket 0 num-of-bytes))
      (server-loop cs)]))
+
+(define (add-new-client cs c)
+  (struct-copy clients cs
+               [rest
+                (cons
+                 c
+                 (clients-rest cs))]))
 
 ;;takes a list of clients and a bstr and sends it to all the clients
 (define (send-this cs b)
@@ -56,9 +76,8 @@
   (write v o)
   (get-output-bytes o))
 
-
 (define (bytes->value bstr)
   (define i (open-input-bytes bstr))
   (read i))
 
-(server-loop empty)
+(server-loop (clients #f empty))

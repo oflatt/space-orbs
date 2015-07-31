@@ -4,7 +4,8 @@
 
 (define MAX-SCREEN 'beginning);maximize only works if the screen has already been drawn once
 
-(define (on-draw g n t)
+(define (on-draw g n ot)
+  (define t (- ot MASTER-TIME-OFFSET))
   (on-orbs-draw (game-orbs g) n t))
 
 (define (on-orbs-draw os n t)

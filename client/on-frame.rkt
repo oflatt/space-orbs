@@ -1,6 +1,7 @@
+
 #lang racket
 (require pict3d "structures.rkt" "variables.rkt")
-(provide on-frame send-orb)
+(provide on-frame send-orb*)
 
 (define udps
   (udp-open-socket "localhost" 50002))
@@ -15,20 +16,28 @@
  "localhost"
  50001)
 
-(define (on-frame g n t)
+(define (on-frame g n ot)
+  (define t (- ot MASTER-TIME-OFFSET))
   (define with-received (on-receive g n t))
   (cond
-    [(send-orb g n t)
+    [(send-orb g t)
      (struct-copy game with-received
                   [mt t])]
     [else with-received]))
 
-(define (send-orb g n t)
+;;sends if send speed time has passed
+;;takes a game
+(define (send-orb g t)
   (cond
     [(>= (- t (game-mt g)) SEND-SPEED)
      (send-state (convert-to-mypos (orbs-player (game-orbs g))))
      #t]
     [else #f]))
+
+;;sends the message
+(define (send-orb* o)
+  (define converted (convert-to-mypos o))
+  (send-state converted))
 
 ;;orb-> orb with mypos and mydir instead of pos and dir
 (define (convert-to-mypos o)
@@ -47,6 +56,27 @@
      (dir-dz (orb-dir o)))]
    [shots
     (shots-convert-to-mypos (orb-shots o))]))
+
+
+(module+ test
+  (convert-to-mypos TESTORB)
+  (struct-copy orb TESTORB
+               [pos
+                (mypos 1 1 1)]
+               [dir
+                (mydir -1 0 0)]))
+(module+ test
+  (convert-to-mypos
+   (struct-copy orb TESTORB
+               [shots
+                (list (shot 20 0 (pos 1 1 1) 60 3 50))]))
+  (struct-copy orb TESTORB
+               [pos
+                (mypos 1 1 1)]
+               [dir
+                (mydir -1 0 0)]
+               [shots
+                (list (shot 20 0 (mypos 1 1 1) 60 3 50))]))
 
 (define (shots-convert-to-mypos l)
   (cond
@@ -97,9 +127,29 @@
          (mypos-y (shot-pos (first l)))
          (mypos-z (shot-pos (first l))))])
       (shots-convert-to-pos (rest l)))]))
-         
+
+(module+ test
+  (convert-to-pos
+   (struct-copy orb TESTORB
+                [pos
+                 (mypos 1 1 1)]
+                [dir
+                 (mydir -1 0 0)]))
+  TESTORB)
+(module+ test
+  (convert-to-pos
+   (struct-copy orb TESTORB
+                [pos
+                 (mypos 1 1 1)]
+                [dir
+                 (mydir -1 0 0)]
+                [shots
+                 (list (shot 20 0 (mypos 1 1 1) 60 3 50))]))
+  (struct-copy orb TESTORB
+               [shots
+                (list (shot 20 0 (pos 1 1 1) 60 3 50))]))
+
 (define (bytes->value bstr)
-  (println bstr)
   (define i (open-input-bytes bstr))
   (read i))
 
@@ -113,9 +163,13 @@
      udps
      byte-bucket))
   (cond
-    [(equal? num-of-bytes #f)
+    [(equal? hostname #f)
      g]
+    [(equal? (bytes->value (subbytes byte-bucket 0 num-of-bytes)) "start-as-master")
+     (set-offset t)
+     DEFAULT-STATE]
     [else
+     (println (subbytes byte-bucket 0 num-of-bytes)) 
      (struct-copy game g
                   [orbs
                    (orbs

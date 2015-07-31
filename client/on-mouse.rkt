@@ -1,10 +1,11 @@
 #lang racket
-(require pict3d rackunit "frame-handling.rkt" "structures.rkt" "landscape.rkt" "current-roll-and-pos.rkt" "rotate-dir.rkt" "variables.rkt" "shots.rkt")
+(require pict3d rackunit "frame-handling.rkt" "structures.rkt" "landscape.rkt" "current-roll-and-pos.rkt" "rotate-dir.rkt" "variables.rkt" "shots.rkt" "on-frame.rkt")
 (provide on-mouse)
 
-(define BEGINNING? #t);sets the mous to the middle initially without moving the view
+(define BEGINNING? #t);sets the mouse to the middle initially without moving the view
 
-(define (on-mouse g n t x-ignored y-ignored e)
+(define (on-mouse g n ot x-ignored y-ignored e)
+  (define t (- ot MASTER-TIME-OFFSET))
   (cond
     [BEGINNING?
      (set! BEGINNING? #f)
@@ -12,12 +13,16 @@
      g]
     [else
      (struct-copy game g
-                  [orbs (on-orbs-mouse (game-orbs g) n t e)])]))
-                  
+                  [orbs (on-orbs-mouse (game-orbs g) n t e)]
+                  [mt t])]))
+
 
 (define (on-orbs-mouse os n t e)
-  (struct-copy orbs os
-               [player (on-player-mouse (orbs-player os) n t e)]))
+  (define result
+    (struct-copy orbs os
+                 [player (on-player-mouse (orbs-player os) n t e)]))
+  (send-orb* (orbs-player result))
+  result)
 
 (define (on-player-mouse o n t e)
   (define-values (x y) (get-mouse-delta))
