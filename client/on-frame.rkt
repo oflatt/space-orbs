@@ -4,7 +4,7 @@
 (provide on-frame send-orb*)
 
 (define udps
-  (udp-open-socket "localhost" 50002))
+  (udp-open-socket CLIENT-ADRESS PORT))
 
 (udp-bind!
  udps
@@ -13,8 +13,8 @@
 
 (udp-connect!
  udps
- "localhost"
- 50001)
+ CLIENT-ADRESS
+ PORT)
 
 (define (on-frame g n ot)
   (define t (- ot MASTER-TIME-OFFSET))
@@ -30,13 +30,15 @@
 (define (send-orb g t)
   (cond
     [(>= (- t (game-mt g)) SEND-SPEED)
+     ;;(println (orbs-player (game-orbs g)))
      (send-state (convert-to-mypos (orbs-player (game-orbs g))))
      #t]
     [else #f]))
 
 ;;sends the message
-(define (send-orb* o)
+(define (send-orb* o why t)
   (define converted (convert-to-mypos o))
+  ; (printf "for ~a at ~a: ~s\n" why t o)
   (send-state converted))
 
 ;;orb-> orb with mypos and mydir instead of pos and dir
@@ -165,11 +167,11 @@
   (cond
     [(equal? hostname #f)
      g]
-    [(equal? (bytes->value (subbytes byte-bucket 0 num-of-bytes)) "start-as-master")
+    [(equal? (bytes->value (subbytes byte-bucket 0 num-of-bytes)) "reset")
      (set-offset t)
      DEFAULT-STATE]
     [else
-     (println (subbytes byte-bucket 0 num-of-bytes)) 
+     ; (printf "recv at ~a: ~s\n" t (bytes->value (subbytes byte-bucket 0 num-of-bytes)))
      (struct-copy game g
                   [orbs
                    (orbs

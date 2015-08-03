@@ -1,64 +1,46 @@
 #lang racket
-(require "../client/structures.rkt")
+(require "../client/structures.rkt" "../client/variables.rkt")
 
 (define udps
-  (udp-open-socket "localhost" 50001))
+  (udp-open-socket SERVER-ADRESS PORT))
 
 (udp-bind!
  udps
- "localhost"
- 50001
+ SERVER-ADRESS
+ PORT
  #t)
 
 (define byte-bucket
-  (make-bytes 20000))
+  (make-bytes PORT))
 
 ;;takes a list of clients
-(define (server-loop cs)
+(define (server-loop l)
   (define-values (num-of-bytes hostname port)
     (udp-receive!
      udps
      byte-bucket))
   (define r
-    (take-out-of-list (clients-rest cs) (client hostname port)))
-  (define m (clients-master cs))
+    (take-out-of-list l (client hostname port)))
   (cond
-    [(equal? m #f)
-     (server-loop (clients (client hostname port) (clients-rest cs)))]
-    [(and
-      (not (equal? (client hostname port) m))
-      (empty? (clients-rest cs)))
+    [(empty? l)
      (println "s")
-     (udp-send-to udps
-                  (client-hostname m)
-                  (client-port m)
-                  (value->bytes "start-as-master"))
-     (server-loop
-      (add-new-client cs (client hostname port)))]
-    [(and
-      (equal? (length (clients-rest cs)) (length r))
-      (not (equal? (client hostname port) m)))
-     (server-loop
-      (add-new-client cs (client hostname port)))]
+     (server-loop (list (client hostname port)))]
+    [(equal? (length l) (length r))
+     "s2"
+     (send-this (cons (client hostname port) l) (value->bytes "reset"))
+     (server-loop (cons (client hostname port) l))]
     [else
      (send-this r (subbytes byte-bucket 0 num-of-bytes))
-     (server-loop cs)]))
-
-(define (add-new-client cs c)
-  (struct-copy clients cs
-               [rest
-                (cons
-                 c
-                 (clients-rest cs))]))
+     (server-loop l)]))
 
 ;;takes a list of clients and a bstr and sends it to all the clients
-(define (send-this cs b)
+(define (send-this l b)
   (cond
-    [(empty? cs)
+    [(empty? l)
      void]
     [else
-     (udp-send-to udps (client-hostname (first cs)) (client-port (first cs)) b)
-     (send-this (rest cs) b)]))
+     (udp-send-to udps (client-hostname (first l)) (client-port (first l)) b)
+     (send-this (rest l) b)]))
 
 (define (take-out-of-list l s)
   (cond
@@ -80,4 +62,4 @@
   (define i (open-input-bytes bstr))
   (read i))
 
-(server-loop (clients #f empty))
+(server-loop empty)

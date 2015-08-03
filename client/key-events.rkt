@@ -42,7 +42,7 @@
                  [time t]
                  [movekeys (cons (movekey lkey STARTING-SPEED)  (orb-movekeys o))]
                  [roll (current-roll o t)]))
-  (send-orb* result)
+  (send-orb* result 'key t)
   result)
 
 (module+ test (check-equal? (on-player-key (struct-copy orb TESTORB [pos (pos 2 2 2)] [movekeys empty]) "n" 5 "shift")
@@ -73,7 +73,7 @@
                  [time t]
                  [movekeys (remove-this-movekey (orb-movekeys o) lkey)]
                  [roll (current-roll o t)]))
-  (send-orb* result)
+  (send-orb* result 'key-release t)
   result)
 
 (module+ test (check-equal? (on-player-release (struct-copy orb TESTORB [pos (pos 2 2 2)] [movekeys (list (movekey " " 1))]) "n" 5 " ")

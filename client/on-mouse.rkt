@@ -21,7 +21,8 @@
   (define result
     (struct-copy orbs os
                  [player (on-player-mouse (orbs-player os) n t e)]))
-  (send-orb* (orbs-player result))
+  (unless (equal? (orbs-player result) (orbs-player os))
+    (send-orb* (orbs-player result) e t))
   result)
 
 (define (on-player-mouse o n t e)
