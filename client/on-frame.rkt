@@ -1,6 +1,6 @@
 
 #lang racket
-(require pict3d "structures.rkt" "variables.rkt")
+(require pict3d rackunit "structures.rkt" "variables.rkt" "landscape.rkt")
 (provide on-frame send-orb*)
 
 (define udps
@@ -16,7 +16,7 @@
  CLIENT-ADRESS
  PORT)
 
-(define (on-frame g n ot)
+(define (on-frame g n ot)set
   (define t (- ot MASTER-TIME-OFFSET))
   (define with-received (on-receive g n t))
   (cond
@@ -61,24 +61,26 @@
 
 
 (module+ test
-  (convert-to-mypos TESTORB)
-  (struct-copy orb TESTORB
-               [pos
-                (mypos 1 1 1)]
-               [dir
-                (mydir -1 0 0)]))
-(module+ test
-  (convert-to-mypos
+  (check-equal?
+   (convert-to-mypos TESTORB)
    (struct-copy orb TESTORB
-               [shots
-                (list (shot 20 0 (pos 1 1 1) 60 3 50))]))
-  (struct-copy orb TESTORB
-               [pos
-                (mypos 1 1 1)]
-               [dir
-                (mydir -1 0 0)]
-               [shots
-                (list (shot 20 0 (mypos 1 1 1) 60 3 50))]))
+                [pos
+                 (mypos 1.0 1.0 1.0)]
+                [dir
+                 (mydir -1.0 0.0 0.0)])))
+(module+ test
+  (check-equal?
+   (convert-to-mypos
+    (struct-copy orb TESTORB
+                 [shots
+                  (list (shot (pos 20 20 0) (pos 0 0 0) (pos 1 1 1) 60 3 50))]))
+   (struct-copy orb TESTORB
+                [pos
+                 (mypos 1.0 1.0 1.0)]
+                [dir
+                 (mydir -1.0 0.0 0.0)]
+                [shots
+                 (list (shot (mypos 20.0 20.0 0.0) (mypos 0.0 0.0 0.0) (mypos 1.0 1.0 1.0) 60 3 50))])))
 
 (define (shots-convert-to-mypos l)
   (cond
@@ -93,7 +95,17 @@
         (mypos
          (pos-x (shot-pos (first l)))
          (pos-y (shot-pos (first l)))
-         (pos-z (shot-pos (first l))))])
+         (pos-z (shot-pos (first l))))]
+       [corner1
+        (mypos
+         (pos-x (shot-corner1 (first l)))
+         (pos-y (shot-corner1 (first l)))
+         (pos-z (shot-corner1 (first l))))]
+       [corner2
+        (mypos
+         (pos-x (shot-corner2 (first l)))
+         (pos-y (shot-corner2 (first l)))
+         (pos-z (shot-corner2 (first l))))])
       (shots-convert-to-mypos (rest l)))]))
 
 ;;orb-> orb with mypos and mydir instead of pos and dir
@@ -127,29 +139,55 @@
         (pos
          (mypos-x (shot-pos (first l)))
          (mypos-y (shot-pos (first l)))
-         (mypos-z (shot-pos (first l))))])
+         (mypos-z (shot-pos (first l))))]
+       [corner1
+        (pos
+         (mypos-x (shot-corner1 (first l)))
+         (mypos-y (shot-corner1 (first l)))
+         (mypos-z (shot-corner1 (first l))))]
+       [corner2
+        (pos
+         (mypos-x (shot-corner2 (first l)))
+         (mypos-y (shot-corner2 (first l)))
+         (mypos-z (shot-corner2 (first l))))])
       (shots-convert-to-pos (rest l)))]))
 
 (module+ test
-  (convert-to-pos
-   (struct-copy orb TESTORB
-                [pos
-                 (mypos 1 1 1)]
-                [dir
-                 (mydir -1 0 0)]))
-  TESTORB)
+  (check-equal?
+   (convert-to-pos
+    (struct-copy orb TESTORB
+                 [pos
+                  (mypos 1 1 1)]
+                 [dir
+                  (mydir -1 0 0)]))
+   TESTORB))
 (module+ test
-  (convert-to-pos
+  (check-equal?
+   (convert-to-pos
+    (struct-copy orb TESTORB
+                 [pos
+                  (mypos 1 1 1)]
+                 [dir
+                  (mydir -1 0 0)]
+                 [shots
+                  (list (shot (mypos 20 20 0) (mypos 0 0 0) (mypos 1 1 1) 60 3 50))]))
    (struct-copy orb TESTORB
-                [pos
-                 (mypos 1 1 1)]
-                [dir
-                 (mydir -1 0 0)]
                 [shots
-                 (list (shot 20 0 (mypos 1 1 1) 60 3 50))]))
-  (struct-copy orb TESTORB
-               [shots
-                (list (shot 20 0 (pos 1 1 1) 60 3 50))]))
+                 (list (shot (pos 20 20 0) (pos 0 0 0) (pos 1 1 1) 60 3 50))])))
+
+(define (convert-cubes-to-pos l)
+  (cond
+    [(empty? l)
+     empty]
+    [else
+     (cons
+      (struct-copy mycube (first l)
+                   [pos
+                    (pos
+                     (mypos-x (mycube-pos (first l)))
+                     (mypos-y (mycube-pos (first l)))
+                     (mypos-z (mycube-pos (first l))))])
+      (convert-cubes-to-pos (rest l)))]))
 
 (define (bytes->value bstr)
   (define i (open-input-bytes bstr))
@@ -167,10 +205,18 @@
   (cond
     [(equal? hostname #f)
      g]
-    [(equal? (bytes->value (subbytes byte-bucket 0 num-of-bytes)) "reset")
+    [(equal? (message-name (bytes->value (subbytes byte-bucket 0 num-of-bytes))) "reset")
      (set-offset t)
      (on-receive
       DEFAULT-STATE
+      n
+      t)]
+    [(equal? (message-name (bytes->value (subbytes byte-bucket 0 num-of-bytes))) "cubes")
+     (set-cubes
+      (convert-cubes-to-pos
+       (message-data (bytes->value (subbytes byte-bucket 0 num-of-bytes)))))
+     (on-receive
+      g
       n
       t)]
     [else
@@ -180,7 +226,7 @@
                    [orbs
                     (orbs
                      (orbs-player (game-orbs g))
-                     (convert-to-pos (bytes->value (subbytes byte-bucket 0 num-of-bytes))))])
+                     (convert-to-pos (message-data (bytes->value (subbytes byte-bucket 0 num-of-bytes)))))])
       n
       t)]))
 
@@ -192,4 +238,4 @@
 (define (send-state o)
   (udp-send
    udps
-   (value->bytes o)))
+   (value->bytes (message "orb" o))))

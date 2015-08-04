@@ -13,6 +13,18 @@
 (define byte-bucket
   (make-bytes PORT))
 
+;list of cubes and number of cubes to make-> list of cubes
+(define (pick-random-cubes l n)
+  (define random-cube
+    (mycube (mypos (random (+ 1 (* WALL-SIZE 2))) (random (+ 1 WALL-SIZE)) (random (+ WALL-SIZE 1))) (+ 2 (random) (random)) "white"))
+  (cond
+    [(= n 0)
+     l]
+    [else
+     (pick-random-cubes (cons random-cube l) (- n 1))]))
+
+(define CUBE-LIST (pick-random-cubes empty 25))
+
 ;;takes a list of clients
 (define (server-loop l)
   (define-values (num-of-bytes hostname port)
@@ -21,16 +33,22 @@
      byte-bucket))
   (define r
     (take-out-of-list l (client hostname port)))
+  (define sender (client hostname port))
   (cond
     [(empty? l)
-     (println "s")
-     (server-loop (list (client hostname port)))]
+     ;(println "s")
+     (send-this (list sender)
+                (value->bytes (message "cubes" CUBE-LIST)))
+     (server-loop (list sender))]
     [(equal? (length l) (length r))
-     "s2"
-     (send-this (cons (client hostname port) l) (value->bytes "reset"))
-     (server-loop (cons (client hostname port) l))]
+     (send-this (cons sender l)
+                (value->bytes (message "reset" 0)))
+     (send-this (list sender)
+                (value->bytes (message "cubes" CUBE-LIST)))
+     (server-loop (cons sender l))]
     [else
-     (send-this r (subbytes byte-bucket 0 num-of-bytes))
+     (send-this r
+                (subbytes byte-bucket 0 num-of-bytes))
      (server-loop l)]))
 
 ;;takes a list of clients and a bstr and sends it to all the clients

@@ -22,10 +22,10 @@
 (define SHOT-LIFE 700);in milliseconds
 (define SHOT-WIDTH 1);radius of shot
 
-(define SEND-SPEED 3000);speed it sends state in milliseconds
+(define SEND-SPEED 400);speed it sends state in milliseconds
 (define MASTER-TIME-OFFSET 0)
 (define PORT 50002)
-(define SERVER-ADRESS "10.0.1.69")
+(define SERVER-ADRESS "10.0.1.12")
 (define CLIENT-ADRESS "c-67-166-78-233.hsd1.ut.comcast.net")
 
 (define TESTORB (orb (pos 1 1 1) 5 '() (dir -1 0 0) 0 empty 0 "Bob" "blue"))

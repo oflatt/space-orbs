@@ -1,6 +1,6 @@
 #lang racket
-(require pict3d "variables.rkt")
-(provide FINAL-LANDSCAPE pick-random-lights LIGHTS-LIST TEST-LAND)
+(require pict3d "variables.rkt" "structures.rkt")
+(provide FINAL-LANDSCAPE pick-random-lights LIGHTS-LIST TEST-LAND set-cubes)
 
 (define TEST-LAND
   (freeze
@@ -32,12 +32,24 @@
 (define LIGHTS-LIST
   (pick-random-lights empty NUM-OF-LIGHTS))
 
-(define (make-landscape cube-list)
+;;list of mycubes-> list of cubes
+(define (make-cube-list l)
+  (cond
+    [(empty? l)
+     empty]
+    [else
+     (cons
+      (set-color
+       (cube (mycube-pos (first l)) (mycube-scale (first l)))
+       (rgba (mycube-color (first l))))
+      (make-cube-list (rest l)))]))
+
+(define (make-landscape mycube-list)
   (let ()
     (define W WALL-SIZE)
     (define H (* W 1/2))
     (append
-     cube-list
+     (make-cube-list mycube-list)
      (list
       (set-emitted
        (rectangle (pos -0.1 0 0) (pos 0 (- H) H))
@@ -78,4 +90,10 @@
 
 (define FINAL-LANDSCAPE
   (freeze
-   (apply combine (make-landscape (pick-random-cubes empty NUM-OF-CUBES)))))
+   (apply combine (make-landscape empty))))
+
+(define (set-cubes l)
+  (set!
+   FINAL-LANDSCAPE
+   (freeze
+    (apply combine (make-landscape l)))))

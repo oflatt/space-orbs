@@ -1,6 +1,6 @@
 #lang racket
 (require pict3d)
-(provide (struct-out movekey) (struct-out orb) (struct-out orbs) (struct-out game) (struct-out shot) (struct-out client) (struct-out mypos) (struct-out mydir) round-pos round-dir round-orbs-dir)
+(provide (struct-out movekey) (struct-out orb) (struct-out orbs) (struct-out game) (struct-out shot) (struct-out client) (struct-out message) (struct-out mypos) (struct-out mydir) (struct-out mycube) round-pos round-dir round-orbs-dir)
 
 ;; key and the speed it is moving in that direction, pos is the pos it had when it was pressed
 (struct movekey (key speed) #:prefab)
@@ -20,9 +20,11 @@
 
 
 (struct client (hostname port) #:transparent)
+(struct message (name data) #:prefab)
 
 (struct mypos (x y z) #:prefab)
 (struct mydir (dx dy dz) #:prefab)
+(struct mycube (pos scale color) #:prefab)
 
 (define (round-pos p)
   (pos
