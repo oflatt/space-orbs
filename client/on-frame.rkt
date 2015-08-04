@@ -169,14 +169,20 @@
      g]
     [(equal? (bytes->value (subbytes byte-bucket 0 num-of-bytes)) "reset")
      (set-offset t)
-     DEFAULT-STATE]
+     (on-receive
+      DEFAULT-STATE
+      n
+      t)]
     [else
      ; (printf "recv at ~a: ~s\n" t (bytes->value (subbytes byte-bucket 0 num-of-bytes)))
-     (struct-copy game g
-                  [orbs
-                   (orbs
-                    (orbs-player (game-orbs g))
-                    (convert-to-pos (bytes->value (subbytes byte-bucket 0 num-of-bytes))))])]))
+     (on-receive
+      (struct-copy game g
+                   [orbs
+                    (orbs
+                     (orbs-player (game-orbs g))
+                     (convert-to-pos (bytes->value (subbytes byte-bucket 0 num-of-bytes))))])
+      n
+      t)]))
 
 (define (value->bytes v)
   (define o (open-output-bytes))
