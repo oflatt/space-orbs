@@ -28,7 +28,7 @@
     [else draw]))
   
 (define (draw-enemy o t)
-  (sphere (current-pos o t) 2))
+  (sphere (current-pos o t) ORB-RADIUS))
 
 (define (lights+camera currentpos d ang)
   (combine (apply combine

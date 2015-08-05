@@ -48,6 +48,8 @@
   (let ()
     (define W WALL-SIZE)
     (define H (* W 1/2))
+    (define S (* H 1/2))
+    (define T (* S 1/2))
     (append
      (make-cube-list mycube-list)
      (list
@@ -73,14 +75,23 @@
        (rectangle (pos 0 -0.1 H) (pos H 0 W))
        (rgba "lightgreen"));extention of back green wall above spawn
       (set-color
-       (rectangle origin (pos -0.1 W W))
-       (rgba "red"));left red wall
+       (rectangle origin (pos -0.1 (+ T S) W))
+       (rgba "white"));close part of left red wall
+      (set-color
+       (rectangle (pos 0 (+ T S) 0) (pos -0.1 (+ H T) (+ S T)))
+       (rgba "white"));bottom small part of left red wall
+      (set-color
+       (rectangle (pos 0 (+ T S) (+ H T)) (pos -0.1 (+ H T) W))
+       (rgba "white"));top small part of left red wall
+      (set-color
+       (rectangle (pos 0 (+ T H) 0) (pos -0.1 W W))
+       (rgba "white"));far part of left red wall
       (set-color
        (rectangle (pos 0 (+ W 0.1) 0) (pos (* 2 W) W W))
-       (rgba "blue"));front blue wall
+       (rgba "yellow"));front blue wall
       (set-color
        (rectangle (pos (+ (* 2 W) 0.1) 0 0) (pos (* 2 W) W W))
-       (rgba "yellow"));right yellow wall
+       (rgba "white"));right yellow wall
       (set-color
        (rectangle (pos 0 0 (+ 0.1 W)) (pos (* 2 W) W W))
        (rgba "purple"));top purple wall

@@ -1,9 +1,8 @@
 #lang racket
 (require pict3d rackunit pict3d/universe "structures.rkt")
-(provide WALL-SIZE NUM-OF-CUBES NUM-OF-LIGHTS DEFAULTPOS DEFAULTPOS2 DEFAULTDIR DEFAULT-STATE STARTING-SPEED SLIDE-SPEED ROTATION-SPEED-MULTIPLIER SHOT-LIFE SHOT-WIDTH TESTORB DISCO?
-         SEND-SPEED MASTER-TIME-OFFSET PORT SERVER-ADRESS CLIENT-ADRESS set-offset)
+(provide (all-defined-out))
 
-(define WALL-SIZE 70)
+(define WALL-SIZE 80)
 (define NUM-OF-CUBES 30)
 (define NUM-OF-LIGHTS 20)
 
@@ -18,6 +17,8 @@
    (orbs (orb DEFAULTPOS 0 '() DEFAULTDIR 0 empty 0 "Bob" "blue") (orb DEFAULTPOS2 0 '() DEFAULTDIR 0 empty 0 "Pie" "red"))
    #f
    0))
+
+(define ORB-RADIUS 2)
 
 (define SHOT-LIFE 700);in milliseconds
 (define SHOT-WIDTH 1);radius of shot
