@@ -1,6 +1,6 @@
 #lang racket
 (require pict3d rackunit pict3d/universe mzlib/string "structures.rkt")
-(provide rotate-around-dir roll-to-dir dir-up-to-roll rotate-up rotate-down rotate-left rotate-right)
+(provide rotate-around-dir roll-to-dir dir-up-to-roll rotate-up rotate-down rotate-left rotate-right ang-between-dirs)
 
 ;;takes two dir and an angle -> one dir
 ;;rotates to-rotate around around, counterclockwise looking in the direction of around
@@ -81,6 +81,17 @@
   (check-equal?
    (round (dir-up-to-roll +x +z))
    0.0))
+
+;;two dir -> ang
+;;gives the angle between two dirs
+(define (ang-between-dirs dir1 dir2)
+  (define d1 (dir-normalize dir1))
+  (define d2 (dir-normalize dir2))
+  (*
+   (asin (min 1.0 (/ (dir-dist (dir- d1 d2)) 2)))
+   2
+   (/ 180 pi)));;have to multiply by this because it is asin give radients
+
 
 ;;dir angle roll -> dir
 ;;rotates the dir "up" by the angle and around the dir by roll
