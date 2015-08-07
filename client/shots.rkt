@@ -1,25 +1,26 @@
 #lang racket
-(require pict3d rackunit "frame-handling.rkt" "structures.rkt" "current-roll-and-pos.rkt" "variables.rkt" "landscape.rkt")
-(provide list-of-shot-pictures new-shot)
+(require pict3d rackunit "frame-handling.rkt" "structures.rkt" "current-roll-and-pos.rkt" "variables.rkt")
+(provide shot-pics new-shot kill-old-shots)
 
-(define (list-of-shot-pictures os t)
-  (define player-shots (kill-old-shots (orb-shots (orbs-player os)) t))
-  (define enemy-shots (kill-old-shots (orb-shots (orbs-enemy os)) t))
-  (append
-   (get-pics-from-shots
-    player-shots t (orb-color (orbs-player os)))
-   (get-pics-from-shots
-    enemy-shots t (orb-color (orbs-enemy os)))))
+;;takes an orbs -> list of pict3ds for all the shots in it
+(define (shot-pics os t)
+  (shot-pics-from-list
+   (cons
+    (orbs-player os)
+    (orbs-enemys os))
+   t))
 
-;list of shots and time-> list of shots
-(define (kill-old-shots l t)
+(define (shot-pics-from-list l t)
   (cond
     [(empty? l)
      empty]
-    [(>= (- t (shot-time (first l))) SHOT-LIFE)
-     (kill-old-shots (rest l) t)]
     [else
-     (cons (first l) (kill-old-shots (rest l) t))]))
+     (append
+      (get-shot-pics-from-orb (first l) t)
+      (shot-pics-from-list (rest l) t))]))
+
+(define (get-shot-pics-from-orb o t)
+  (get-pics-from-shots (orb-shots o) t (orb-color o)))
 
 (define (get-pics-from-shots l t c)
   (cond
@@ -54,8 +55,6 @@
      yaw)
     (dir (pos-x p) (pos-y p) (pos-z p)))))
 
-
-
 (define (new-shot o poc t)
   (define cp (current-pos o t))
   (define-values (yaw pitch) (dir->angles (orb-dir o)))
@@ -74,3 +73,13 @@
    yaw
    pitch
    t))
+
+;list of shots and time-> list of shots
+(define (kill-old-shots l t)
+  (cond
+    [(empty? l)
+     empty]
+    [(>= (- t (shot-time (first l))) SHOT-LIFE)
+     (kill-old-shots (rest l) t)]
+    [else
+     (cons (first l) (kill-old-shots (rest l) t))]))

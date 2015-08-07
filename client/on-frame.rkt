@@ -1,6 +1,6 @@
 
 #lang racket
-(require pict3d rackunit "structures.rkt" "variables.rkt" "landscape.rkt")
+(require pict3d rackunit "structures.rkt" "variables.rkt" "landscape.rkt" "shots.rkt")
 (provide on-frame send-orb*)
 
 (define udps
@@ -18,12 +18,21 @@
 
 (define (on-frame g n ot)set
   (define t (- ot MASTER-TIME-OFFSET))
-  (define with-received (on-receive g n t))
+  (define cleaned (clean-old-shots g n t))
+  (define with-received (on-receive cleaned n t))
   (cond
     [(send-orb g t)
      (struct-copy game with-received
                   [mt t])]
     [else with-received]))
+
+(define (clean-old-shots g n t)
+  (struct-copy game g
+               [orbs
+                (struct-copy orbs (game-orbs g)
+                             [player
+                              (struct-copy orb (orbs-player (game-orbs g))
+                                           [shots (kill-old-shots (orb-shots (orbs-player (game-orbs g))) t)])])]))
 
 ;;sends if send speed time has passed
 ;;takes a game
@@ -205,13 +214,13 @@
   (cond
     [(equal? hostname #f)
      g]
-    [(equal? (message-name (bytes->value (subbytes byte-bucket 0 num-of-bytes))) "reset")
+    [(this-message? "reset" num-of-bytes)
      (set-offset t)
      (on-receive
-      DEFAULT-STATE
+      g
       n
       t)]
-    [(equal? (message-name (bytes->value (subbytes byte-bucket 0 num-of-bytes))) "cubes")
+    [(this-message? "cubes" num-of-bytes)
      (set-cubes
       (convert-cubes-to-pos
        (message-data (bytes->value (subbytes byte-bucket 0 num-of-bytes)))))
@@ -219,16 +228,86 @@
       g
       n
       t)]
+    [(this-message? "new-connect" num-of-bytes)
+     (println "new-connect")
+     (struct-copy game g
+                  [orbs
+                   (struct-copy orbs (game-orbs g)
+                                [enemys
+                                 (append
+                                  (list-of-new-orbs (message-data (bytes->value (subbytes byte-bucket 0 num-of-bytes))))
+                                  (orbs-enemys (game-orbs g)))])])]
+    [(this-message? "define" num-of-bytes)
+     (define subm (bytes->value (subbytes byte-bucket 0 num-of-bytes)))
+     (on-receive
+      (struct-copy game g
+                   [orbs
+                    (struct-copy orbs (game-orbs g)
+                                 [player
+                                  (new-orb-from-define (message-data subm))])])
+      n
+      t)]
     [else
      ; (printf "recv at ~a: ~s\n" t (bytes->value (subbytes byte-bucket 0 num-of-bytes)))
      (on-receive
       (struct-copy game g
                    [orbs
-                    (orbs
-                     (orbs-player (game-orbs g))
-                     (convert-to-pos (message-data (bytes->value (subbytes byte-bucket 0 num-of-bytes)))))])
+                    (struct-copy orbs (game-orbs g)
+                                 [enemys
+                                  (update-an-enemy
+                                   (orbs-enemys (game-orbs g))
+                                   (convert-to-pos (message-data (bytes->value (subbytes byte-bucket 0 num-of-bytes)))))])])
       n
       t)]))
+
+;;takes a list and an orb -> list
+(define (update-an-enemy l o)
+  (cond
+    [(empty? l)
+     (println "error- message from unrecognized orb")
+     empty]
+    [(equal? (client (orb-hostname (first l)) (orb-port (first l))) (client (orb-hostname o) (orb-port o)))
+     (cons
+      o
+      (rest l))]
+    [else
+     (cons
+      (first l)
+      (update-an-enemy (rest l) o))]))
+
+;;list of clients-> list of orbs
+(define (list-of-new-orbs l)
+  (cond
+   [(empty? l)
+    empty]
+   [else
+    (cons
+     (struct-copy orb DEFAULT-ORB
+                  [hostname (client-hostname (first l))]
+                  [port (client-port (first l))])
+     (list-of-new-orbs (rest l)))]))
+
+;;orbdefine -> orb
+(define (new-orb-from-define d)
+  (cond
+    [(equal? (orbdefine-color d) "blue")
+     (struct-copy orb DEFAULT-ORB
+                  [color (orbdefine-color d)]
+                  [name (orbdefine-name d)]
+                  [hostname (orbdefine-hostname d)]
+                  [port (orbdefine-port d)]
+                  [pos DEFAULTPOS])]
+    [else
+     (struct-copy orb DEFAULT-ORB
+                  [color (orbdefine-color d)]
+                  [name (orbdefine-name d)]
+                  [hostname (orbdefine-hostname d)]
+                  [port (orbdefine-port d)]
+                  [pos DEFAULTPOS2])]))
+
+;;string and number of bytes -> bool
+(define (this-message? s num)
+  (equal? (message-name (bytes->value (subbytes byte-bucket 0 num))) s))
 
 (define (value->bytes v)
   (define o (open-output-bytes))

@@ -39,17 +39,36 @@
      ;(println "s")
      (send-this (list sender)
                 (value->bytes (message "cubes" CUBE-LIST)))
+     (send-this (list sender)
+                (value->bytes (message "define" (this-orbdefine sender empty))))
      (server-loop (list sender))]
     [(equal? (length l) (length r))
-     (send-this (cons sender l)
-                (value->bytes (message "reset" 0)))
+     (define sender-orbdefine (this-orbdefine sender l))
+     (send-this l
+                (value->bytes (message "new-connect" (list sender))))
+     (send-this (list sender)
+                (value->bytes (message "new-connect" l)))
      (send-this (list sender)
                 (value->bytes (message "cubes" CUBE-LIST)))
+     (send-this (list sender)
+                (value->bytes (message "define" sender-orbdefine)))
      (server-loop (cons sender l))]
     [else
      (send-this r
                 (subbytes byte-bucket 0 num-of-bytes))
      (server-loop l)]))
+
+(define (this-orbdefine s clients)
+  (define n (length clients))
+  (orbdefine
+   (number->string (+ 1 n))
+   (cond
+     [(even? n)
+      "blue"]
+     [else
+      "red"])
+   (client-hostname s)
+   (client-port s)))
 
 ;;takes a list of clients and a bstr and sends it to all the clients
 (define (send-this l b)

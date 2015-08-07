@@ -13,8 +13,8 @@
   (define draw
     (combine
      FINAL-LANDSCAPE
-     (apply combine (list-of-shot-pictures os t))
-     (draw-enemy (orbs-enemy os) t)
+     (apply combine (shot-pics os t))
+     (draw-enemys (orbs-enemys os) t)
      (lights+camera (current-pos p t) (orb-dir p) (current-roll p t))))
   (cond
     [(equal? MAX-SCREEN 'beginning)
@@ -26,7 +26,16 @@
      (set! MAX-SCREEN 'done)
      draw]
     [else draw]))
-  
+
+(define (draw-enemys l t)
+  (cond
+    [(empty? l)
+     empty-pict3d]
+    [else
+     (combine
+      (draw-enemy (first l) t)
+      (draw-enemys (rest l) t))]))
+
 (define (draw-enemy o t)
   (sphere (current-pos o t) ORB-RADIUS))
 

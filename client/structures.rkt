@@ -1,6 +1,7 @@
 #lang racket
 (require pict3d)
-(provide (struct-out movekey) (struct-out orb) (struct-out orbs) (struct-out game) (struct-out shot) (struct-out client) (struct-out message) (struct-out mypos) (struct-out mydir) (struct-out mycube) round-pos round-dir round-orbs-dir)
+(provide (struct-out movekey) (struct-out orb) (struct-out orbs) (struct-out game) (struct-out shot) (struct-out client) (struct-out message) (struct-out orbdefine)
+         (struct-out mypos) (struct-out mydir) (struct-out mycube) round-pos round-dir round-orbs-dir)
 
 ;; key and the speed it is moving in that direction, pos is the pos it had when it was pressed
 (struct movekey (key speed) #:prefab)
@@ -11,16 +12,17 @@
 ;;Dir is direction it is pointing and roll is how much the camera is rotated. mx and my are mouse coordinates
 ;;shots is a list of shots to draw and reload-time is time in milliseconds before the player may shoot again
 ;;name and color are strings
-(struct orb (pos time movekeys dir roll shots reload-time name color) #:prefab)
-;;player and enemy are both orbs
-(struct orbs (player enemy) #:transparent)
+(struct orb (pos time movekeys dir roll shots reload-time name color hostname port) #:prefab)
+;;player is a orb and enemys is a list of orbs
+(struct orbs (player enemys) #:transparent)
 ;orbs is an orbs and exit? is wheather or not to stop the state and close the window
 ;;mt is the time in milliseconds at last send of state
 (struct game (orbs exit? mt) #:transparent)
 
 
-(struct client (hostname port) #:transparent)
+(struct client (hostname port) #:prefab)
 (struct message (name data) #:prefab)
+(struct orbdefine (name color hostname port) #:prefab)
 
 (struct mypos (x y z) #:prefab)
 (struct mydir (dx dy dz) #:prefab)

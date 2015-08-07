@@ -4,7 +4,7 @@
 
 (define WALL-SIZE 80)
 (define NUM-OF-CUBES 30)
-(define NUM-OF-LIGHTS 20)
+(define NUM-OF-LIGHTS 30)
 
 (define DEFAULTPOS (pos 15 -15 15))
 (define DEFAULTPOS2 (pos WALL-SIZE (/ WALL-SIZE 2) (/ WALL-SIZE 2)))
@@ -14,9 +14,10 @@
 (define ROTATION-SPEED-MULTIPLIER 4)
 (define DEFAULT-STATE
   (game
-   (orbs (orb DEFAULTPOS 0 '() DEFAULTDIR 0 empty 0 "Bob" "blue") (orb DEFAULTPOS2 0 '() DEFAULTDIR 0 empty 0 "Pie" "red"))
+   (orbs (orb DEFAULTPOS 0 '() DEFAULTDIR 0 empty 0 "1" "blue" #f #f) empty)
    #f
    0))
+(define DEFAULT-ORB (orb DEFAULTPOS 0 '() DEFAULTDIR 0 empty 0 "1" "blue" #f #f))
 
 (define ORB-RADIUS 2)
 
@@ -29,7 +30,7 @@
 (define SERVER-ADRESS "10.0.1.12")
 (define CLIENT-ADRESS "c-67-166-78-233.hsd1.ut.comcast.net")
 
-(define TESTORB (orb (pos 1 1 1) 5 '() (dir -1 0 0) 0 empty 0 "Bob" "blue"))
+(define TESTORB (orb (pos 1 1 1) 5 '() (dir -1 0 0) 0 empty 0 "Bob" "blue" #f #f))
 
 (define DISCO? #f)
 
