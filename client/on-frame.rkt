@@ -1,7 +1,6 @@
-
 #lang racket
-(require pict3d rackunit "structures.rkt" "variables.rkt" "landscape.rkt" "shots.rkt")
-(provide on-frame send-orb*)
+(require pict3d rackunit "structures.rkt" "variables.rkt" "landscape.rkt")
+(provide on-frame send-orb* send-kill)
 
 (define udps
   (udp-open-socket CLIENT-ADRESS PORT))
@@ -214,6 +213,16 @@
   (cond
     [(equal? hostname #f)
      g]
+    [(this-message? "kill" num-of-bytes)
+     (struct-copy game g
+                  [kills (+ (game-kills g) 1)])]
+    [(this-message? "death" num-of-bytes)
+     (struct-copy game g
+                  [deaths (+ (game-deaths g) 1)]
+                  [orbs
+                   (struct-copy orbs (game-orbs g)
+                                [player
+                                 (respawn-orb (orbs-player (game-orbs g)))])])]
     [(this-message? "reset" num-of-bytes)
      (set-offset t)
      (on-receive
@@ -260,6 +269,18 @@
       n
       t)]))
 
+(define (respawn-orb o)
+  (struct-copy orb o
+               [pos
+                (cond
+                  [(equal? (orb-color o) "red")
+                   DEFAULTPOS2]
+                  [else
+                   DEFAULTPOS])]
+               [movekeys empty]
+               [dir DEFAULTDIR2]
+               [roll 0]))
+  
 ;;takes a list and an orb -> list
 (define (update-an-enemy l o)
   (cond
@@ -296,14 +317,16 @@
                   [name (orbdefine-name d)]
                   [hostname (orbdefine-hostname d)]
                   [port (orbdefine-port d)]
-                  [pos DEFAULTPOS])]
+                  [pos DEFAULTPOS]
+                  [dir DEFAULTDIR])]
     [else
      (struct-copy orb DEFAULT-ORB
                   [color (orbdefine-color d)]
                   [name (orbdefine-name d)]
                   [hostname (orbdefine-hostname d)]
                   [port (orbdefine-port d)]
-                  [pos DEFAULTPOS2])]))
+                  [pos DEFAULTPOS2]
+                  [dir DEFAULTDIR2])]))
 
 ;;string and number of bytes -> bool
 (define (this-message? s num)
@@ -318,3 +341,19 @@
   (udp-send
    udps
    (value->bytes (message "orb" o))))
+
+;;sends a message with the client that was shot
+(define (send-kill c)
+  (udp-send
+   udps
+   (value->bytes (message "kill" c))))
+
+;there is a copy of this in shots.rkt but it needs to require on frame
+(define (kill-old-shots l t)
+  (cond
+    [(empty? l)
+     empty]
+    [(>= (- t (shot-time (first l))) SHOT-LIFE)
+     (kill-old-shots (rest l) t)]
+    [else
+     (cons (first l) (kill-old-shots (rest l) t))]))

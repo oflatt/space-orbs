@@ -1,6 +1,6 @@
 #lang racket
-(require pict3d rackunit "frame-handling.rkt" "structures.rkt" "current-roll-and-pos.rkt" "variables.rkt" "landscape.rkt" "shots.rkt")
-(provide on-draw)
+(require pict3d rackunit "frame-handling.rkt" "structures.rkt" "current-roll-and-pos.rkt" "variables.rkt" "landscape.rkt" "shots.rkt" "draw-enemys.rkt")
+(provide on-draw draw-enemy)
 
 (define MAX-SCREEN 'beginning);maximize only works if the screen has already been drawn once
 
@@ -26,18 +26,6 @@
      (set! MAX-SCREEN 'done)
      draw]
     [else draw]))
-
-(define (draw-enemys l t)
-  (cond
-    [(empty? l)
-     empty-pict3d]
-    [else
-     (combine
-      (draw-enemy (first l) t)
-      (draw-enemys (rest l) t))]))
-
-(define (draw-enemy o t)
-  (sphere (current-pos o t) ORB-RADIUS))
 
 (define (lights+camera currentpos d ang)
   (combine (apply combine

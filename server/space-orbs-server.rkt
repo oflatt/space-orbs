@@ -34,6 +34,8 @@
   (define r
     (take-out-of-list l (client hostname port)))
   (define sender (client hostname port))
+  (define m (subbytes byte-bucket 0 num-of-bytes))
+  (define mvalue (bytes->value m))
   (cond
     [(empty? l)
      ;(println "s")
@@ -53,9 +55,14 @@
      (send-this (list sender)
                 (value->bytes (message "define" sender-orbdefine)))
      (server-loop (cons sender l))]
+    [(equal? (message-name mvalue) "kill")
+     (send-this (list (message-data mvalue))
+                (value->bytes (message "death" "respawn")))
+     (send-this (list sender)
+                (value->bytes (message "kill" 1)))
+     (server-loop l)]
     [else
-     (send-this r
-                (subbytes byte-bucket 0 num-of-bytes))
+     (send-this r m)
      (server-loop l)]))
 
 (define (this-orbdefine s clients)

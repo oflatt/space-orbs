@@ -9,12 +9,15 @@
 (define DEFAULTPOS (pos 15 -15 15))
 (define DEFAULTPOS2 (pos WALL-SIZE (/ WALL-SIZE 2) (/ WALL-SIZE 2)))
 (define DEFAULTDIR +y)
+(define DEFAULTDIR2 -x)
 (define STARTING-SPEED 1/100)
 (define SLIDE-SPEED 1/150)
 (define ROTATION-SPEED-MULTIPLIER 4)
 (define DEFAULT-STATE
   (game
    (orbs (orb DEFAULTPOS 0 '() DEFAULTDIR 0 empty 0 "1" "blue" #f #f) empty)
+   0
+   0
    #f
    0))
 (define DEFAULT-ORB (orb DEFAULTPOS 0 '() DEFAULTDIR 0 empty 0 "1" "blue" #f #f))

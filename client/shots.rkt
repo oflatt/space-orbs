@@ -1,7 +1,57 @@
 #lang racket
-(require pict3d rackunit "frame-handling.rkt" "structures.rkt" "current-roll-and-pos.rkt" "variables.rkt")
-(provide shot-pics new-shot kill-old-shots)
+(require pict3d rackunit "frame-handling.rkt" "structures.rkt" "current-roll-and-pos.rkt" "variables.rkt" "draw-enemys.rkt" "on-frame.rkt" "landscape.rkt")
+(provide shot-pics new-shot kill-old-shots on-shoot)
 
+(define (on-shoot os t)
+  (define killc (shot-orb os t));;killed client
+  (define with-new (add-shot os t))
+  (cond
+    [killc
+     (send-kill killc)
+     with-new]
+    [else
+     with-new]))
+
+(define (add-shot os t)
+  (define o (orbs-player os))
+  (define poc (trace
+               (combine
+                FINAL-LANDSCAPE
+                (draw-enemys (orbs-enemys os) t))
+               (current-pos o t)
+               (orb-dir o)))
+  (struct-copy
+   orb
+   o
+   [shots
+    (cond
+      [(equal? poc #f)
+       (orb-shots o)]
+      [else (cons (new-shot o poc t) (orb-shots o))])]))
+
+;;takes an orbs and time and gives a client
+(define (shot-orb os t)
+  (shot-orb-helper (current-pos (orbs-player os) t) (orb-dir (orbs-player os)) (orbs-enemys os) t))
+
+;;takes a pos, dir, and a list of enemy orbs
+(define (shot-orb-helper pos dir l t)
+  (cond
+    [(empty? l)
+     #f]
+    [else
+     (shot-orb-helper-not-empty pos dir l t)]))
+
+;;because I want to define poc, the list has to not be empty
+(define (shot-orb-helper-not-empty pos dir l t)
+  (define o (first l))
+  (define poc (trace (draw-enemy o t) pos dir))
+  (cond
+    [poc
+     (client (orb-hostname o) (orb-port o))]
+    [else
+     (shot-orb-helper pos dir (rest l) t)]))
+     
+  
 ;;takes an orbs -> list of pict3ds for all the shots in it
 (define (shot-pics os t)
   (shot-pics-from-list

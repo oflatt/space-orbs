@@ -20,25 +20,18 @@
 (define (on-orbs-mouse os n t e)
   (define result
     (struct-copy orbs os
-                 [player (on-player-mouse (orbs-player os) n t e)]))
+                 [player (on-player-mouse (orbs-player os) n t e os)]))
   (unless (equal? (orbs-player result) (orbs-player os))
     (send-orb* (orbs-player result) e t))
   result)
 
-(define (on-player-mouse o n t e)
+(define (on-player-mouse o n t e os)
   (define-values (x y) (get-mouse-delta))
   (define n (new-dir-and-ang o x y t))
   (cond
     [(equal? e "left-down")
-     (define poc (trace FINAL-LANDSCAPE (current-pos o t) (orb-dir o)))
-     (struct-copy
-      orb
-      o
-      [shots
-       (cond
-         [(equal? poc #f)
-          empty]
-         [else (cons (new-shot o poc t) (orb-shots o))])])]
+     (on-shoot
+      os t)]
     [else
      (struct-copy
       orb
@@ -55,7 +48,10 @@
      TESTORB
      1
      5
-     "drag"))
+     "drag")
+    (orbs
+     TESTORB
+     empty))
    (struct-copy
     orb
     TESTORB
