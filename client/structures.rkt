@@ -17,7 +17,7 @@
 (struct orbs (player enemys) #:transparent)
 ;orbs is an orbs and exit? is wheather or not to stop the state and close the window
 ;;mt is the time in milliseconds at last send of state
-(struct game (orbs kills deaths exit? mt) #:transparent)
+(struct game (mode orbs kills deaths exit? mt) #:transparent)
 
 
 (struct client (hostname port) #:prefab)

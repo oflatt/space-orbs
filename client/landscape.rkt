@@ -71,28 +71,28 @@
        (rectangle (pos 0 (- (- H) 0.1) 0) (pos H (- H) H))
        (emitted "blue" 2));back blue square blue spawn
       (set-emitted
-       (rectangle (pos 0 (+ S T) (+ S T T T(- 0.1))) (pos (- 0.2) (+ S T T T) (+ S T T T)))
+       (rectangle (pos 0 (+ S T) (+ H T(- 0.1))) (pos (- 0.2) (+ H T) (+ H T)))
        (emitted "blue" 2));top border blue hole
       (set-emitted
-       (rectangle (pos 0 (+ S T) (+ S T)) (pos (- 0.1) (+ S T 0.2) (+ S T T T)))
+       (rectangle (pos 0 (+ S T) (+ S T)) (pos (- 0.1) (+ S T 0.2) (+ H T)))
        (emitted "blue" 2));left border blue hole
       (set-emitted
-       (rectangle (pos 0 (+ S T T T) (+ S T)) (pos (- 0.1) (+ S T T T (- 0.2)) (+ S T T T)))
+       (rectangle (pos 0 (+ H T) (+ S T)) (pos (- 0.1) (+ H T (- 0.2)) (+ H T)))
        (emitted "blue" 2));right border blue hole
       (set-emitted
-       (rectangle (pos 0 (+ S T) (+ S T)) (pos (- 0.1) (+ S T T T) (+ S T 0.2)))
+       (rectangle (pos 0 (+ S T) (+ S T)) (pos (- 0.1) (+ H T) (+ S T 0.2)))
        (emitted "blue" 2));bottom border blue hole
       (set-emitted
-       (rectangle (pos D (+ S T) (+ S T T T)) (pos (+ D (- 0.1)) (+ S T T T) (+ S T T T (- 0.2))))
+       (rectangle (pos D (+ S T) (+ H T)) (pos (+ D (- 0.1)) (+ H T) (+ H T (- 0.2))))
        (emitted "red" 2));top border red hole
       (set-emitted
-       (rectangle (pos D (+ S T) (+ S T T T)) (pos (+ D (- 0.1)) (+ S T 0.2) (+ S T)))
+       (rectangle (pos D (+ S T) (+ H T)) (pos (+ D (- 0.1)) (+ S T 0.2) (+ S T)))
        (emitted "red" 2));right border red hole
       (set-emitted
-       (rectangle (pos D (+ S T T T) (+ S T T T)) (pos (+ D (- 0.1)) (+ S T T T (- 0.2)) (+ S T)))
+       (rectangle (pos D (+ H T) (+ H T)) (pos (+ D (- 0.1)) (+ H T (- 0.2)) (+ S T)))
        (emitted "red" 2));left border red hole
       (set-emitted
-       (rectangle (pos D (+ S T) (+ S T)) (pos (+ D (- 0.1)) (+ S T T T) (+ S T 0.2)))
+       (rectangle (pos D (+ S T) (+ S T)) (pos (+ D (- 0.1)) (+ H T) (+ S T 0.2)))
        (emitted "red" 2));bottom border red hole
       (set-emitted
        (rectangle (pos (- WH 0.1) W H) (pos WH WH W))
@@ -101,7 +101,7 @@
        (rectangle (pos (- D 0.1) W H) (pos D WH W))
        (emitted "green" 2));left wall from red spawn
       (set-emitted
-       (rectangle (pos WH W -0.1) (pos D WH H))
+       (rectangle (pos WH W (- H 0.1)) (pos D WH H))
        (emitted "green" 2));bottom wall from red spawn
       (set-emitted
        (rectangle (pos WH W (+ W -0.1)) (pos D WH W))

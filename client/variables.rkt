@@ -15,6 +15,7 @@
 (define ROTATION-SPEED-MULTIPLIER 4)
 (define DEFAULT-STATE
   (game
+   'deathmatch
    (orbs (orb DEFAULTPOS 0 '() DEFAULTDIR 0 empty 0 "1" "blue" #f #f) empty)
    0
    0
