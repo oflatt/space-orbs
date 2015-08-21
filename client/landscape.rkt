@@ -44,7 +44,7 @@
        (rgba (mycube-color (first l))))
       (make-cube-list (rest l)))]))
 
-(define (make-landscape mycube-list)
+(define (make-landscape mycube-list);Carson Hahn works on this
   (let ()
     (define W WALL-SIZE)
     (define D (* W 2))
