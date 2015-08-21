@@ -47,7 +47,9 @@
 (define (make-landscape mycube-list)
   (let ()
     (define W WALL-SIZE)
+    (define D (* W 2))
     (define H (* W 1/2))
+    (define WH (+ W H))
     (define S (* H 1/2))
     (define T (* S 1/2))
     (append
@@ -55,19 +57,58 @@
      (list
       (set-emitted
        (rectangle (pos -0.1 0 0) (pos 0 (- H) H))
-       (emitted "blue" 2));from spawn, left blue square
+       (emitted "green" 2));from spawn, left green square spawn
      (set-emitted
        (rectangle (pos (+ H 0.1) 0 0) (pos H (- H) H))
-       (emitted "blue" 2));right blue square
+       (emitted "green" 2));right green square spawn
       (set-emitted
        (rectangle (pos 0 0 -0.1) (pos H (- H) 0))
-       (emitted "blue" 2));bottom blue square
+       (emitted "green" 2));bottom green square spawn
       (set-emitted
        (rectangle (pos 0 0 (+ H 0.1)) (pos H (- H) H))
-       (emitted "blue" 2));top blue square
+       (emitted "green" 2));top green square spawn
       (set-emitted
        (rectangle (pos 0 (- (- H) 0.1) 0) (pos H (- H) H))
-       (emitted "green" 2));back green square
+       (emitted "blue" 2));back blue square blue spawn
+      (set-emitted
+       (rectangle (pos 0 (+ S T) (+ S T T T(- 0.1))) (pos (- 0.2) (+ S T T T) (+ S T T T)))
+       (emitted "blue" 2));top border blue hole
+      (set-emitted
+       (rectangle (pos 0 (+ S T) (+ S T)) (pos (- 0.1) (+ S T 0.2) (+ S T T T)))
+       (emitted "blue" 2));left border blue hole
+      (set-emitted
+       (rectangle (pos 0 (+ S T T T) (+ S T)) (pos (- 0.1) (+ S T T T (- 0.2)) (+ S T T T)))
+       (emitted "blue" 2));right border blue hole
+      (set-emitted
+       (rectangle (pos 0 (+ S T) (+ S T)) (pos (- 0.1) (+ S T T T) (+ S T 0.2)))
+       (emitted "blue" 2));bottom border blue hole
+      (set-emitted
+       (rectangle (pos D (+ S T) (+ S T T T)) (pos (+ D (- 0.1)) (+ S T T T) (+ S T T T (- 0.2))))
+       (emitted "red" 2));top border red hole
+      (set-emitted
+       (rectangle (pos D (+ S T) (+ S T T T)) (pos (+ D (- 0.1)) (+ S T 0.2) (+ S T)))
+       (emitted "red" 2));right border red hole
+      (set-emitted
+       (rectangle (pos D (+ S T T T) (+ S T T T)) (pos (+ D (- 0.1)) (+ S T T T (- 0.2)) (+ S T)))
+       (emitted "red" 2));left border red hole
+      (set-emitted
+       (rectangle (pos D (+ S T) (+ S T)) (pos (+ D (- 0.1)) (+ S T T T) (+ S T 0.2)))
+       (emitted "red" 2));bottom border red hole
+      (set-emitted
+       (rectangle (pos (- WH 0.1) W H) (pos WH WH W))
+       (emitted "green" 2));right wall from red spawn
+      (set-emitted
+       (rectangle (pos (- D 0.1) W H) (pos D WH W))
+       (emitted "green" 2));left wall from red spawn
+      (set-emitted
+       (rectangle (pos WH W -0.1) (pos D WH H))
+       (emitted "green" 2));bottom wall from red spawn
+      (set-emitted
+       (rectangle (pos WH W (+ W -0.1)) (pos D WH W))
+       (emitted "green" 2));top square of red spawn
+      (set-emitted
+       (rectangle (pos WH WH H) (pos D (+ WH 0.1) W))
+       (emitted "red" 2));back red wall of red spawn
       (set-color
        (rectangle (pos H -0.1 0) (pos (* 2 W) 0 W))
        (rgba "lightgreen"));back green wall
@@ -76,28 +117,40 @@
        (rgba "lightgreen"));extention of back green wall above spawn
       (set-color
        (rectangle origin (pos -0.1 (+ T S) W))
-       (rgba "white"));close part of left red wall
+       (rgba "white"));close part of left white wall
       (set-color
        (rectangle (pos 0 (+ T S) 0) (pos -0.1 (+ H T) (+ S T)))
-       (rgba "white"));bottom small part of left red wall
+       (rgba "white"));bottom small part of left white wall
       (set-color
        (rectangle (pos 0 (+ T S) (+ H T)) (pos -0.1 (+ H T) W))
-       (rgba "white"));top small part of left red wall
+       (rgba "white"));top small part of left white wall
       (set-color
        (rectangle (pos 0 (+ T H) 0) (pos -0.1 W W))
-       (rgba "white"));far part of left red wall
+       (rgba "white"));far part of left white wall
       (set-color
-       (rectangle (pos 0 (+ W 0.1) 0) (pos (* 2 W) W W))
-       (rgba "yellow"));front blue wall
+       (rectangle (pos 0 (+ W 0.1) 0) (pos (- D H) W W))
+       (rgba "yellow"));front yellow wall
       (set-color
-       (rectangle (pos (+ (* 2 W) 0.1) 0 0) (pos (* 2 W) W W))
-       (rgba "white"));right yellow wall
+       (rectangle (pos (+ W H) (+ W 0.1) 0) (pos D W H))
+       (rgba "yellow"));extension of front yellow wall
       (set-color
        (rectangle (pos 0 0 (+ 0.1 W)) (pos (* 2 W) W W))
        (rgba "purple"));top purple wall
       (set-color
        (rectangle origin (pos (* 2 W) W -0.1))
-       (rgba "orange"))))));bottom orange wall
+       (rgba "orange"));bottom orange wall
+      (set-color
+       (rectangle (pos D 0 0) (pos (+ D -0.1) (+ T S) W))
+       (rgba "white"));close part of right white wall
+      (set-color
+       (rectangle (pos D (+ T S) 0) (pos (+ D -0.1) (+ H T) (+ S T)))
+       (rgba "white"));bottom small part of right white wall
+      (set-color
+       (rectangle (pos D (+ T S) (+ H T)) (pos (+ D -0.1) (+ H T) W))
+       (rgba "white"));top small part of right white wall
+      (set-color
+       (rectangle (pos D (+ T H) 0) (pos (+ D -0.1) W W))
+       (rgba "white"))))));far part of right white wall
 
 (define FINAL-LANDSCAPE
   (freeze
