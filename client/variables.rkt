@@ -25,6 +25,7 @@
 
 (define ORB-RADIUS 2)
 
+(define RELOAD-SPEED 1000);in milliseconds
 (define SHOT-LIFE 700);in milliseconds
 (define SHOT-WIDTH 1);radius of shot
 

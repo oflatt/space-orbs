@@ -2,10 +2,13 @@
 (require pict3d rackunit "frame-handling.rkt" "structures.rkt" "current-roll-and-pos.rkt" "variables.rkt" "draw-enemys.rkt" "on-frame.rkt" "landscape.rkt")
 (provide shot-pics new-shot kill-old-shots on-shoot)
 
+;;orbs and a time -> player's orb
 (define (on-shoot os t)
   (define killc (shot-orb os t));;killed client
   (define with-new (add-shot os t))
   (cond
+    [(< (- t (orb-reload-time (orbs-player os))) RELOAD-SPEED)
+     (orbs-player os)]
     [killc
      (send-kill killc)
      with-new]
@@ -27,7 +30,8 @@
     (cond
       [(equal? poc #f)
        (orb-shots o)]
-      [else (cons (new-shot o poc t) (orb-shots o))])]))
+      [else (cons (new-shot o poc t) (orb-shots o))])]
+   [reload-time t]))
 
 ;;takes an orbs and time and gives a client
 (define (shot-orb os t)

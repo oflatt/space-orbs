@@ -10,7 +10,7 @@
 (struct shot (corner1 corner2 pos yaw pitch time) #:prefab)
 ;;position and time at last key change.list of moves. Pos is a list of 3 coordinates that is current. (continue on next line)
 ;;Dir is direction it is pointing and roll is how much the camera is rotated. mx and my are mouse coordinates
-;;shots is a list of shots to draw and reload-time is time in milliseconds before the player may shoot again
+;;shots is a list of shots to draw and reload-time is time the player shot last
 ;;name and color are strings
 (struct orb (pos time movekeys dir roll shots reload-time name color hostname port) #:prefab)
 ;;player is a orb and enemys is a list of orbs
