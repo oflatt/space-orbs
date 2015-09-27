@@ -1,7 +1,16 @@
 # Installation 
 
-On Mac OS X, if you've DrRacket installed, you may need to run:
-
+You can install it by either running the command
 ```
-/Applications/Racket\ v6.2/bin/raco setup pict3d
+raco pkg install git://github.com/oflatt/space-orbs
+```
+Or by opening the DrRacket package manager and entering
+```
+git://github.com/oflatt/space-orbs
+```
+As the package source.
+
+You can then run the game with the command
+```
+racket -l space-orbs/client/space-orbs-client.rkt
 ```
