@@ -5,6 +5,7 @@
 (define deps
   '("base"
     "pict3d"
+    "lens"
     "compatibility-lib"
     "gui-lib"
     "rackunit-lib"))

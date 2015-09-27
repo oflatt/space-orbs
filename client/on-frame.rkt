@@ -1,5 +1,5 @@
 #lang racket
-(require pict3d rackunit "structures.rkt" "variables.rkt" "landscape.rkt")
+(require pict3d lens rackunit "structures.rkt" "variables.rkt" "landscape.rkt")
 (provide on-frame send-orb* send-kill)
 
 (define udps
@@ -26,12 +26,11 @@
     [else with-received]))
 
 (define (clean-old-shots g n t)
-  (struct-copy game g
-               [orbs
-                (struct-copy orbs (game-orbs g)
-                             [player
-                              (struct-copy orb (orbs-player (game-orbs g))
-                                           [shots (kill-old-shots (orb-shots (orbs-player (game-orbs g))) t)])])]))
+  (lens-transform
+   game-orbs-player-shots-lens
+   g
+   (λ (shots)
+     (kill-old-shots shots t))))
 
 ;;sends if send speed time has passed
 ;;takes a game
@@ -88,7 +87,8 @@
                 [dir
                  (mydir -1.0 0.0 0.0)]
                 [shots
-                 (list (shot (mypos 20.0 20.0 0.0) (mypos 0.0 0.0 0.0) (mypos 1.0 1.0 1.0) 60 3 50))])))
+                 (list (shot (mypos 20.0 20.0 0.0) (mypos 0.0 0.0 0.0) (mypos 1.0 1.0 1.0) 60 3 50))]
+                )))
 
 (define (shots-convert-to-mypos l)
   (cond
@@ -244,7 +244,9 @@
                    (struct-copy orbs (game-orbs g)
                                 [enemys
                                  (append
-                                  (list-of-new-orbs (message-data (bytes->value (subbytes byte-bucket 0 num-of-bytes))))
+                                  (list-of-new-orbs
+                                   (message-data (bytes->value
+                                                  (subbytes byte-bucket 0 num-of-bytes))))
                                   (orbs-enemys (game-orbs g)))])])]
     [(this-message? "define" num-of-bytes)
      (define subm (bytes->value (subbytes byte-bucket 0 num-of-bytes)))
@@ -265,7 +267,9 @@
                                  [enemys
                                   (update-an-enemy
                                    (orbs-enemys (game-orbs g))
-                                   (convert-to-pos (message-data (bytes->value (subbytes byte-bucket 0 num-of-bytes)))))])])
+                                   (convert-to-pos
+                                    (message-data
+                                     (bytes->value (subbytes byte-bucket 0 num-of-bytes)))))])])
       n
       t)]))
 
@@ -287,7 +291,8 @@
     [(empty? l)
      (println "error- message from unrecognized orb")
      empty]
-    [(equal? (client (orb-hostname (first l)) (orb-port (first l))) (client (orb-hostname o) (orb-port o)))
+    [(equal? (client (orb-hostname (first l)) (orb-port (first l)))
+             (client (orb-hostname o) (orb-port o)))
      (cons
       o
       (rest l))]
