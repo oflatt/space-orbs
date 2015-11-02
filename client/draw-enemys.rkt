@@ -1,5 +1,5 @@
 #lang racket
-(require pict3d "current-roll-and-pos.rkt" "variables.rkt")
+(require pict3d "current-roll-and-pos.rkt" "structures.rkt" "variables.rkt")
 (provide draw-enemys draw-enemy)
 
 (define (draw-enemys l t)
@@ -12,4 +12,9 @@
       (draw-enemys (rest l) t))]))
 
 (define (draw-enemy o t)
-  (sphere (current-pos o t) ORB-RADIUS))
+  (define cp (current-pos o t))
+  (combine
+   (set-emitted
+    (sphere (pos+ cp (dir-scale (orb-dir o) ORB-RADIUS)) (/ ORB-RADIUS 2))
+    (emitted (orb-color o) 2))
+   (sphere cp ORB-RADIUS)))

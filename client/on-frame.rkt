@@ -15,10 +15,11 @@
  CLIENT-ADRESS
  PORT)
 
-(define (on-frame g n ot)set
+(define (on-frame g n ot)
   (define t (- ot MASTER-TIME-OFFSET))
   (define cleaned (clean-old-shots g n t))
   (define with-received (on-receive cleaned n t))
+  ;(collect-garbage #t)
   (cond
     [(send-orb g t)
      (struct-copy game with-received

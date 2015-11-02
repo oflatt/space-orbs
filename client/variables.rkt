@@ -27,7 +27,7 @@
 
 (define RELOAD-SPEED 1000);in milliseconds
 (define SHOT-LIFE 700);in milliseconds
-(define SHOT-WIDTH 1);radius of shot
+(define SHOT-WIDTH 0.5);radius of shot
 
 (define SEND-SPEED 400);speed it sends state in milliseconds
 (define MASTER-TIME-OFFSET 0)
