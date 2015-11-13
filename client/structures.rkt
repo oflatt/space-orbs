@@ -2,7 +2,7 @@
 (require pict3d lens unstable/lens/struct-provide)
 (provide (all-defined-out))
 
-;; key and the speed it is moving in that direction, pos is the pos it had when it was pressed
+;; key and the speed it is moving in that direction
 (struct/lens movekey (key speed) #:prefab)
 ;corner 1 and 2 are pos for drawing and pos is where to move it
 ;time is time in milliseconds when it was shot
@@ -15,8 +15,9 @@
 ;;player is a orb and enemys is a list of orbs
 (struct/lens orbs (player enemys) #:transparent)
 ;orbs is an orbs and exit? is wheather or not to stop the state and close the window
-;;mt is the time in milliseconds at last send of state
-(struct/lens game (mode orbs kills deaths exit? mt) #:transparent)
+;;scores? is whether or not tab is pressed, to show scores ect.
+;;mt is the time in milliseconds at last update and send of state
+(struct/lens game (mode orbs kills deaths exit? scores? mt) #:transparent)
 
 (define game-orbs-player-lens (lens-thrush game-orbs-lens orbs-player-lens))
 (define game-orbs-player-pos-lens (lens-thrush game-orbs-player-lens orb-pos-lens))
@@ -45,3 +46,6 @@
 
 (define (round-orbs-dir o)
   (struct-copy orb o [dir (round-dir (orb-dir o))]))
+
+(define (pos->dir p)
+  (dir (pos-x p) (pos-y p) (pos-z p)))

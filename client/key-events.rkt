@@ -22,6 +22,9 @@
     [(equal? key "escape")
      (struct-copy game g
                   [exit? #t])]
+    [(equal? key "\t")
+     (struct-copy game g
+                  [scores? #t])]
     [(find-this-movekey lkey (orb-movekeys (orbs-player (game-orbs g))))
      g]
     [(or (equal? lkey "w") (equal? lkey "s") (equal? lkey "a") (equal? lkey "d") (equal? lkey " ") (equal? lkey "shift") (equal? lkey "q") (equal? lkey "e"))
@@ -54,6 +57,9 @@
   (define t (- ot MASTER-TIME-OFFSET))
   (define lkey (string-foldcase key))
   (cond
+    [(equal? key "\t")
+     (struct-copy game g
+                  [scores? #f])]
     [(or (equal? lkey "w") (equal? lkey "s") (equal? lkey "a") (equal? lkey "d") (equal? lkey " ") (equal? lkey "shift") (equal? lkey "q") (equal? lkey "e"))
      (struct-copy game g
                   [orbs (on-orbs-release (game-orbs g) n t key)]

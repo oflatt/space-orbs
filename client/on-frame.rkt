@@ -1,5 +1,5 @@
 #lang racket
-(require pict3d lens rackunit "structures.rkt" "variables.rkt" "landscape.rkt")
+(require pict3d lens rackunit "structures.rkt" "variables.rkt" "landscape.rkt" "current-roll-and-pos.rkt")
 (provide on-frame send-orb* send-kill)
 
 (define udps
@@ -19,11 +19,19 @@
   (define t (- ot MASTER-TIME-OFFSET))
   (define cleaned (clean-old-shots g n t))
   (define with-received (on-receive cleaned n t))
+  (define player (orbs-player (game-orbs with-received)))
   ;(collect-garbage #t)
   (cond
     [(send-orb g t)
      (struct-copy game with-received
-                  [mt t])]
+                  [mt t]
+                  [orbs
+                   (struct-copy orbs (game-orbs with-received)
+                                [player
+                                 (struct-copy orb player
+                                              [pos (current-pos player t)]
+                                              [time t]
+                                              [roll (current-roll player t)])])])]
     [else with-received]))
 
 (define (clean-old-shots g n t)
@@ -37,7 +45,7 @@
 ;;takes a game
 (define (send-orb g t)
   (cond
-    [(>= (- t (game-mt g)) SEND-SPEED)
+    [(>= (- t (game-mt g)) UPDATE-SPEED)
      ;;(println (orbs-player (game-orbs g)))
      (send-state (convert-to-mypos (orbs-player (game-orbs g))))
      #t]

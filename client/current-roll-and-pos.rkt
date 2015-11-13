@@ -1,6 +1,7 @@
 #lang racket
 (require pict3d rackunit pict3d/universe mzlib/string "structures.rkt" "variables.rkt" "rotate-dir.rkt" "landscape.rkt" "collision-detection.rkt")
 (provide current-pos current-roll)
+;;this is where all the magic happens.
 
 (define (current-roll o t)
   (define ms (orb-movekeys o))

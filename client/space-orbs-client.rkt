@@ -1,10 +1,16 @@
 #lang racket
-(require pict3d "variables.rkt" "on-draw.rkt" "key-events.rkt" "on-mouse.rkt" "stop-state.rkt" "big-crunch.rkt" "on-frame.rkt")
+(require pict3d "variables.rkt" "on-draw.rkt" "key-events.rkt" "on-mouse.rkt" "stop-state.rkt" "big-crunch.rkt" "on-frame.rkt"
+         "frame-handling.rkt"
+         racket/class
+         racket/gui/base)
 
 (current-material (material #:ambient 0.01
                             #:diffuse 0.39
                             #:specular 1
                             #:roughness 0.2))
+
+(define gl-config (new gl-config%))
+(send gl-config set-sync-swap #t)
 
 (big-bang3d/big-crunch
  DEFAULT-STATE
@@ -14,4 +20,7 @@
  #:on-release on-release
  #:on-mouse on-mouse
  #:stop-state? stop-state?
- #:on-frame on-frame)
+ #:on-frame on-frame
+ #:display-mode 'hide-menu-bar
+ #:gl-config gl-config
+ #:cursor (make-cursor-blank))

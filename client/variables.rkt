@@ -8,7 +8,7 @@
 
 (define DEFAULTPOS (pos 15 -15 15))
 (define DEFAULTPOS2 (pos WALL-SIZE (/ WALL-SIZE 2) (/ WALL-SIZE 2)))
-(define DEFAULTDIR +y)
+(define DEFAULTDIR -y)
 (define DEFAULTDIR2 -x)
 (define STARTING-SPEED 1/100)
 (define SLIDE-SPEED 1/150)
@@ -20,6 +20,7 @@
    0
    0
    #f
+   #f
    0))
 (define DEFAULT-ORB (orb DEFAULTPOS 0 '() DEFAULTDIR 0 empty 0 "1" "blue" #f #f))
 
@@ -29,7 +30,7 @@
 (define SHOT-LIFE 700);in milliseconds
 (define SHOT-WIDTH 0.5);radius of shot
 
-(define SEND-SPEED 400);speed it sends state in milliseconds
+(define UPDATE-SPEED 100);speed it sends state and updates the key times and old positions in milliseconds
 (define MASTER-TIME-OFFSET 0)
 (define PORT 50002)
 (define SERVER-ADRESS "10.0.1.12")
