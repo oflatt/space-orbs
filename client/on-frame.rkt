@@ -223,15 +223,21 @@
     [(equal? hostname #f)
      g]
     [(this-message? "kill" num-of-bytes)
-     (struct-copy game g
-                  [kills (+ (game-kills g) 1)])]
+     (lens-transform
+      game-orbs-player-kills-lens
+      g
+      (lambda (kills)
+        (+ 1 kills)))]
     [(this-message? "death" num-of-bytes)
-     (struct-copy game g
-                  [deaths (+ (game-deaths g) 1)]
-                  [orbs
-                   (struct-copy orbs (game-orbs g)
-                                [player
-                                 (respawn-orb (orbs-player (game-orbs g)))])])]
+     (lens-transform
+      game-orbs-player-lens
+      (lens-transform
+       game-orbs-player-deaths-lens
+       g
+       (lambda (deaths)
+         (+ 1 deaths)))
+      (lambda (player)
+        (respawn-orb player)))]
     [(this-message? "reset" num-of-bytes)
      (set-offset t)
      (on-receive

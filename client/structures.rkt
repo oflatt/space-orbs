@@ -11,18 +11,20 @@
 ;;Dir is direction it is pointing and roll is how much the camera is rotated. mx and my are mouse coordinates
 ;;shots is a list of shots to draw and reload-time is time the player shot last
 ;;name and color are strings
-(struct/lens orb (pos time movekeys dir roll shots reload-time name color hostname port) #:prefab)
+(struct/lens orb (pos time movekeys dir roll shots reload-time name color hostname port kills deaths) #:prefab)
 ;;player is a orb and enemys is a list of orbs
 (struct/lens orbs (player enemys) #:transparent)
 ;orbs is an orbs and exit? is wheather or not to stop the state and close the window
 ;;scores? is whether or not tab is pressed, to show scores ect.
 ;;mt is the time in milliseconds at last update and send of state
-(struct/lens game (mode orbs kills deaths exit? scores? mt) #:transparent)
+(struct/lens game (mode orbs exit? scores? mt) #:transparent)
 
 (define game-orbs-player-lens (lens-thrush game-orbs-lens orbs-player-lens))
 (define game-orbs-player-pos-lens (lens-thrush game-orbs-player-lens orb-pos-lens))
 (define game-orbs-player-time-lens (lens-thrush game-orbs-player-lens orb-time-lens))
 (define game-orbs-player-shots-lens (lens-thrush game-orbs-player-lens orb-shots-lens))
+(define game-orbs-player-deaths-lens (lens-thrush game-orbs-player-lens orb-deaths-lens))
+(define game-orbs-player-kills-lens (lens-thrush game-orbs-player-lens orb-kills-lens))
 
 (struct/lens client (hostname port) #:prefab)
 (struct/lens message (name data) #:prefab)
