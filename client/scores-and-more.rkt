@@ -1,6 +1,6 @@
 #lang racket
-(require pict3d pict3d-die-cut lens "structures.rkt" "current-roll-and-pos.rkt" "rotate-dir.rkt")
-(provide make-cross draw-scores)
+(require pict3d pict3d-die-cut lens "structures.rkt" "current-roll-and-pos.rkt" "rotate-dir.rkt" "variables.rkt")
+(provide make-cross draw-scores draw-dashboard)
 
 
 ;;two strings -> frozen centered pict of that word
@@ -52,6 +52,17 @@
        45)))))
 
 ;;orb and time-> pict
+;;draws cursor and 
+(define (draw-dashboard g t)
+  (define o
+    (lens-view
+     game-orbs-player-lens
+     g))
+  (combine
+   (make-cross o t)
+   (draw-scores g t)))
+
+;;orb and time-> pict
 ;;draws little cursor thing
 (define (make-cross o t)
   (put-in-front o t CROSS-PICT))
@@ -74,8 +85,30 @@
   (combine
    (put-in-front o t KILLS-DIECUT #:xoffset -6 #:yoffset -4)
    (put-in-front o t DEATHS-DIECUT  #:xoffset 6 #:yoffset -4)
-   (put-in-front o t (make-this-centered-word (number->string (orb-kills o)) "red")  #:xoffset -6)
-   (put-in-front o t (make-this-centered-word (number->string (orb-deaths o)) "blue")  #:xoffset 6)))
+   (make-scoreboard-numbers o t)))
+
+;;uses the cache and set!
+(define (make-scoreboard-numbers o t)
+  (combine
+   (make-kills-number o t)
+   (make-deaths-number o t)))
+
+(define (make-kills-number o t)
+  (cond
+    [(equal? (orb-kills o) (first KILLS-NUM-CACHE))
+     (put-in-front o t (second KILLS-NUM-CACHE) #:xoffset -6)]
+    [else
+     (set!KILLS-NUM-CACHE (list (orb-kills o) (freeze (make-this-centered-word (number->string (orb-kills o)) "red"))));;make the new number pic
+     (make-kills-number o t)]))
+
+(define (make-deaths-number o t)
+  (cond
+    [(equal? (orb-deaths o) (first DEATHS-NUM-CACHE))
+     (put-in-front o t  (second DEATHS-NUM-CACHE) #:xoffset 6)]
+    [else
+     (set!DEATHS-NUM-CACHE (list (orb-deaths o) (freeze (make-this-centered-word (number->string (orb-deaths o)) "blue"))));;make the new number pic
+     (make-deaths-number o t)]))
+  
 
 ;;takes an orb, time, and a pict. Orients the pic in front of the orb
 ;;this assumes that the pict is centered on the origin perfectly

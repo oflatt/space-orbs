@@ -11,6 +11,7 @@
 
 (define gl-config (new gl-config%))
 (send gl-config set-sync-swap #t)
+(send gl-config set-legacy? #f)
 
 (big-bang3d/big-crunch
  DEFAULT-STATE

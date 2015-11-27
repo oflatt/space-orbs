@@ -13,12 +13,13 @@
 ;;name and color are strings
 (struct/lens orb (pos time movekeys dir roll shots reload-time name color hostname port kills deaths) #:prefab)
 ;;player is a orb and enemys is a list of orbs
-(struct/lens orbs (player enemys) #:transparent)
+(struct/lens orbs (player enemys) #:transparent);;enemys includes teammates, confusing!
 ;orbs is an orbs and exit? is wheather or not to stop the state and close the window
 ;;scores? is whether or not tab is pressed, to show scores ect.
 ;;mt is the time in milliseconds at last update and send of state
 (struct/lens game (mode orbs exit? scores? mt) #:transparent)
 
+(define game-orbs-enemys-lens (lens-thrush game-orbs-lens orbs-enemys-lens))
 (define game-orbs-player-lens (lens-thrush game-orbs-lens orbs-player-lens))
 (define game-orbs-player-pos-lens (lens-thrush game-orbs-player-lens orb-pos-lens))
 (define game-orbs-player-time-lens (lens-thrush game-orbs-player-lens orb-time-lens))
@@ -26,9 +27,9 @@
 (define game-orbs-player-deaths-lens (lens-thrush game-orbs-player-lens orb-deaths-lens))
 (define game-orbs-player-kills-lens (lens-thrush game-orbs-player-lens orb-kills-lens))
 
-(struct/lens client (hostname port) #:prefab)
-(struct/lens message (name data) #:prefab)
-(struct/lens orbdefine (name color hostname port) #:prefab)
+(struct/lens client (hostname port last-message-time) #:prefab);;used by server to keep track of clients
+(struct/lens message (name data) #:prefab);;this is what is sent between clients and server
+(struct/lens orbdefine (name color hostname port) #:prefab);;used for sending info about an orb for kills, new orbs, ect.
 
 (struct/lens mypos (x y z) #:prefab)
 (struct/lens mydir (dx dy dz) #:prefab)

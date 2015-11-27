@@ -37,7 +37,7 @@
 (define (shot-orb os t)
   (shot-orb-helper (current-pos (orbs-player os) t) (orb-dir (orbs-player os)) (orbs-enemys os) t))
 
-;;takes a pos, dir, and a list of enemy orbs
+;;takes a pos, dir, and a list of enemy orbs -> false or the orbdefine of the one that was shot
 (define (shot-orb-helper pos dir l t)
   (cond
     [(empty? l)
@@ -51,7 +51,7 @@
   (define poc (trace (draw-enemy o t) pos dir))
   (cond
     [poc
-     (client (orb-hostname o) (orb-port o))]
+     (orbdefine 1 "dummy-color-value" (orb-hostname o) (orb-port o))]
     [else
      (shot-orb-helper pos dir (rest l) t)]))
      

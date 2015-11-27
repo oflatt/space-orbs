@@ -238,13 +238,13 @@
          (+ 1 deaths)))
       (lambda (player)
         (respawn-orb player)))]
-    [(this-message? "reset" num-of-bytes)
+    [(this-message? "reset" num-of-bytes);;tells orb to reset milliseconds offset
      (set-offset t)
      (on-receive
       g
       n
       t)]
-    [(this-message? "cubes" num-of-bytes)
+    [(this-message? "cubes" num-of-bytes);;gives cubes for landscape
      (set-cubes
       (convert-cubes-to-pos
        (message-data (bytes->value (subbytes byte-bucket 0 num-of-bytes)))))
@@ -252,8 +252,8 @@
       g
       n
       t)]
-    [(this-message? "new-connect" num-of-bytes)
-     (println "new-connect")
+    [(this-message? "new-connect" num-of-bytes);;gives a new orb
+     ;(println "new-connect")
      (struct-copy game g
                   [orbs
                    (struct-copy orbs (game-orbs g)
@@ -263,7 +263,7 @@
                                    (message-data (bytes->value
                                                   (subbytes byte-bucket 0 num-of-bytes))))
                                   (orbs-enemys (game-orbs g)))])])]
-    [(this-message? "define" num-of-bytes)
+    [(this-message? "define" num-of-bytes);;defines the player's orb
      (define subm (bytes->value (subbytes byte-bucket 0 num-of-bytes)))
      (on-receive
       (struct-copy game g
@@ -271,6 +271,16 @@
                     (struct-copy orbs (game-orbs g)
                                  [player
                                   (new-orb-from-define (message-data subm))])])
+      n
+      t)]
+    [(this-message? "disconnect" num-of-bytes);;gives a orbdefine of a client that disconnected
+     (define subm (bytes->value (subbytes byte-bucket 0 num-of-bytes)))
+     (on-receive
+      (lens-transform
+       game-orbs-enemys-lens
+       g
+       (lambda (enemys)
+         (delete-this-orb-from-define (message-data subm) enemys)))
       n
       t)]
     [else
@@ -299,15 +309,25 @@
                [movekeys empty]
                [dir DEFAULTDIR2]
                [roll 0]))
-  
+
+;;orbdefine and list of orbs -> list of orbs
+(define (delete-this-orb-from-define od l)
+  (cond
+    [(empty? l)
+     (println "error: got a delete for an orb I didn't have")
+     l]
+    [(and (equal? (orbdefine-port od) (orb-port (first l))) (equal? (orbdefine-hostname od) (orb-hostname (first l))))
+     (rest l)]
+    [else
+     (cons (first l) (delete-this-orb-from-define od (rest l)))]))
+
 ;;takes a list and an orb -> list
 (define (update-an-enemy l o)
   (cond
     [(empty? l)
      (println "error- message from unrecognized orb")
      empty]
-    [(equal? (client (orb-hostname (first l)) (orb-port (first l)))
-             (client (orb-hostname o) (orb-port o)))
+    [(and (equal? (orb-hostname (first l)) (orb-hostname o)) (equal? (orb-port (first l)) (orb-port o)))
      (cons
       o
       (rest l))]
@@ -362,7 +382,7 @@
    udps
    (value->bytes (message "orb" o))))
 
-;;sends a message with the client that was shot
+;;sends a message with the orbdefine of the orb that was shot
 (define (send-kill c)
   (udp-send
    udps

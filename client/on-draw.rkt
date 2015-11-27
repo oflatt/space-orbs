@@ -5,7 +5,7 @@
 (define (on-draw g n ot)
   (define t (- ot MASTER-TIME-OFFSET))
   (combine
-   (draw-scores g t)
+   (draw-dashboard g t)
    (on-orbs-draw (game-orbs g) n t)))
 
 (define (on-orbs-draw os n t)
@@ -13,7 +13,6 @@
   (define draw
     (combine
      FINAL-LANDSCAPE
-     (make-cross p t)
      (apply combine (shot-pics os t))
      (draw-enemys (orbs-enemys os) t)
      (lights+camera (current-pos p t) (orb-dir p) (current-roll p t))))

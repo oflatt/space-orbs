@@ -29,7 +29,7 @@
 (define SHOT-WIDTH 0.5);radius of shot
 
 (define UPDATE-SPEED 100);speed it sends state and updates the key times and old positions in milliseconds
-(define MASTER-TIME-OFFSET 0)
+(define MASTER-TIME-OFFSET 0);;set! variable for how much to offset the time, to keep time consistant for new connects- I think it works ok
 (define PORT 50002)
 (define SERVER-ADRESS "10.0.1.12")
 (define CLIENT-ADRESS "c-67-166-78-233.hsd1.ut.comcast.net")
@@ -41,3 +41,17 @@
 (define (set-offset t)
   (println "s")
   (set! MASTER-TIME-OFFSET (+ MASTER-TIME-OFFSET t)))
+
+;;cache for drawing the pict for the number of deaths in the scoreboard. set! variable
+;;it is a list of the number of the pict and the pict
+(define DEATHS-NUM-CACHE
+  (list 80 empty-pict3d))
+
+(define KILLS-NUM-CACHE
+  (list 80 empty-pict3d))
+
+(define (set!KILLS-NUM-CACHE l)
+  (set! KILLS-NUM-CACHE l))
+
+(define (set!DEATHS-NUM-CACHE l)
+  (set! DEATHS-NUM-CACHE l))

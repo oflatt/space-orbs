@@ -26,16 +26,18 @@
 (define CUBE-LIST (pick-random-cubes empty 25))
 
 ;;takes a list of clients
-(define (server-loop l)
+(define (server-loop old-l)
   (define-values (num-of-bytes hostname port)
     (udp-receive!
      udps
      byte-bucket))
+  (define sender (client hostname port (current-milliseconds)))
+  (define l (replace-client old-l sender))
   (define r
-    (take-out-of-list l (client hostname port)))
-  (define sender (client hostname port))
+    (take-client-out-of-list l (client hostname port 2)))
   (define m (subbytes byte-bucket 0 num-of-bytes))
   (define mvalue (bytes->value m))
+  (define oc? (old-client? l))
   (cond
     [(empty? l)
      ;(println "s")
@@ -56,14 +58,47 @@
                 (value->bytes (message "define" sender-orbdefine)))
      (server-loop (cons sender l))]
     [(equal? (message-name mvalue) "kill")
-     (send-this (list (message-data mvalue))
+     (send-this (list (client-from-orbdefine (message-data mvalue)))
                 (value->bytes (message "death" "respawn")))
      (send-this (list sender)
                 (value->bytes (message "kill" 1)))
      (server-loop l)]
+    [oc?
+     (send-this l (value->bytes (message "disconnect" (this-orbdefine oc? empty))))
+     (server-loop  (take-client-out-of-list l oc?))]
     [else
      (send-this r m)
      (server-loop l)]))
+
+(define (client-from-orbdefine od)
+  (client (orbdefine-hostname od) (orbdefine-port od) 1))
+
+;;list of clients and a client-> list of clients
+(define (replace-client l s)
+  (cond
+    [(empty? l)
+     empty];;if it is a new client it won't already be in the list
+    [(same-client? (first l) s)
+     (cons
+      s
+      (rest l))]
+    [else
+     (cons
+      (first l)
+      (replace-client (rest l) s))]))
+
+(define (same-client? c1 c2)
+  (and (equal? (client-port c1) (client-port c2)) (equal? (client-hostname c1) (client-hostname c2))))
+
+;;list of clients -> client or false
+(define (old-client? l)
+  (cond
+    [(empty? l)
+     false]
+    [(> (- (current-milliseconds) (client-last-message-time (first l))) 5000);;if it has been this long since the last message
+     (first l)]
+    [else
+     (old-client? (rest l))]))
 
 (define (this-orbdefine s clients)
   (define n (length clients))
@@ -86,16 +121,16 @@
      (udp-send-to udps (client-hostname (first l)) (client-port (first l)) b)
      (send-this (rest l) b)]))
 
-(define (take-out-of-list l s)
+(define (take-client-out-of-list l s)
   (cond
     [(empty? l)
-     empty]
-    [(equal? s (first l))
+     empty];;if client was not in list at all
+    [(same-client? (first l) s)
      (rest l)]
     [else
      (cons
       (first l)
-      (take-out-of-list (rest l) s))]))
+      (take-client-out-of-list (rest l) s))]))
 
 (define (value->bytes v)
   (define o (open-output-bytes))
