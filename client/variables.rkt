@@ -38,6 +38,8 @@
 
 (define DISCO? #f)
 
+(define MOUSE-SENSITIVITY 10);;higher is more sensitive
+
 (define (set-offset t)
   (println "s")
   (set! MASTER-TIME-OFFSET (+ MASTER-TIME-OFFSET t)))

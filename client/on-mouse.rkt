@@ -27,7 +27,19 @@
 
 (define (on-player-mouse o n t e os)
   (define-values (x y) (get-mouse-delta))
-  (define n (new-dir-and-ang o x y t))
+  (define x-scaled
+    (cond
+      [(negative? x)
+       (- (/ (expt x 2) MOUSE-SENSITIVITY))]
+      [else
+       (/ (expt x 2) MOUSE-SENSITIVITY)]))
+  (define y-scaled
+    (cond
+      [(negative? y)
+       (- (/ (expt y 2) MOUSE-SENSITIVITY))]
+      [else
+       (/ (expt y 2) MOUSE-SENSITIVITY)]))
+  (define n (new-dir-and-ang o x-scaled y-scaled t))
   (cond
     [(equal? e "left-down")
      (on-shoot

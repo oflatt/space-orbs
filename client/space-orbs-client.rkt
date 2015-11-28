@@ -13,15 +13,16 @@
 (send gl-config set-sync-swap #t)
 (send gl-config set-legacy? #f)
 
-(big-bang3d/big-crunch
- DEFAULT-STATE
- #:name "Space Orbs"
- #:on-draw on-draw
- #:on-key on-key
- #:on-release on-release
- #:on-mouse on-mouse
- #:stop-state? stop-state?
- #:on-frame on-frame
- #:display-mode 'hide-menu-bar
- #:gl-config gl-config
- #:cursor (make-cursor-blank))
+(void;;void makes it not return the state
+ (big-bang3d/big-crunch
+  DEFAULT-STATE
+  #:name "Space Orbs"
+  #:on-draw on-draw
+  #:on-key on-key
+  #:on-release on-release
+  #:on-mouse on-mouse
+  #:stop-state? stop-state?
+  #:on-frame on-frame
+  #:display-mode 'hide-menu-bar
+  #:gl-config gl-config
+  #:cursor (make-cursor-blank)))
