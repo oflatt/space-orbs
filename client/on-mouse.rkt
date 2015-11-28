@@ -28,17 +28,9 @@
 (define (on-player-mouse o n t e os)
   (define-values (x y) (get-mouse-delta))
   (define x-scaled
-    (cond
-      [(negative? x)
-       (- (/ (expt x 2) MOUSE-SENSITIVITY))]
-      [else
-       (/ (expt x 2) MOUSE-SENSITIVITY)]))
+    (scale-for-sensitivity x))
   (define y-scaled
-    (cond
-      [(negative? y)
-       (- (/ (expt y 2) MOUSE-SENSITIVITY))]
-      [else
-       (/ (expt y 2) MOUSE-SENSITIVITY)]))
+    (scale-for-sensitivity y))
   (define n (new-dir-and-ang o x-scaled y-scaled t))
   (cond
     [(equal? e "left-down")
@@ -52,6 +44,30 @@
       [time t]
       [dir (first n)]
       [roll (second n)])]))
+
+(define (scale-for-sensitivity unknown-x)
+  (define negateorone
+    (cond
+      [(negative? unknown-x)
+       -1]
+      [else
+       1]));;-1 or 1, -1 if unknown-x was negative
+  (define x
+    (cond
+      [(equal? negateorone -1)
+       (abs unknown-x)]
+      [else
+       unknown-x]))
+  (*
+   MOUSE-SENSITIVITY
+   (cond
+     [(> x MOUSE-MOVE-WAVE-MAX)
+      x]
+     [else
+      (* negateorone
+         (* MOUSE-MOVE-WAVE-MAX
+            (- 1
+               (cos (* (/ x MOUSE-MOVE-WAVE-MAX) (/ pi 2))))))])))
 
 (module+ test
   (check-equal?

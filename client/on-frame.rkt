@@ -314,7 +314,7 @@
 (define (delete-this-orb-from-define od l)
   (cond
     [(empty? l)
-     (println "error: got a delete for an orb I didn't have")
+     ;(println "error: got a delete for an orb I didn't have")
      l]
     [(and (equal? (orbdefine-port od) (orb-port (first l))) (equal? (orbdefine-hostname od) (orb-hostname (first l))))
      (rest l)]
@@ -325,7 +325,7 @@
 (define (update-an-enemy l o)
   (cond
     [(empty? l)
-     (println "error- message from unrecognized orb")
+     ;(println "error- message from unrecognized orb")
      empty]
     [(and (equal? (orb-hostname (first l)) (orb-hostname o)) (equal? (orb-port (first l)) (orb-port o)))
      (cons

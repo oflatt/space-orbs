@@ -38,7 +38,8 @@
 
 (define DISCO? #f)
 
-(define MOUSE-SENSITIVITY 10);;higher is more sensitive
+(define MOUSE-SENSITIVITY 1/2);;higher is more "sensitive" which means less movement means more in game movement
+(define MOUSE-MOVE-WAVE-MAX 200);;anything under 200 is applied to the cosng wave for sensitivity
 
 (define (set-offset t)
   (println "s")
