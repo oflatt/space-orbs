@@ -40,7 +40,6 @@
   (define oc? (old-client? l))
   (cond
     [(empty? l)
-     ;(println "s")
      (send-this (list sender)
                 (value->bytes (message "cubes" CUBE-LIST)))
      (send-this (list sender)

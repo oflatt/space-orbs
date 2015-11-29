@@ -58,16 +58,19 @@
        (abs unknown-x)]
       [else
        unknown-x]))
-  (*
-   MOUSE-SENSITIVITY
-   (cond
-     [(> x MOUSE-MOVE-WAVE-MAX)
-      x]
-     [else
-      (* negateorone
-         (* MOUSE-MOVE-WAVE-MAX
-            (- 1
-               (cos (* (/ x MOUSE-MOVE-WAVE-MAX) (/ pi 2))))))])))
+  (cond
+    [USE-MOUSE-CURVE?
+     (*
+      MOUSE-SENSITIVITY
+      (cond
+        [(> x MOUSE-MOVE-WAVE-MAX)
+         (- x 20)]
+        [else
+         (* negateorone
+            (* MOUSE-MOVE-WAVE-MAX
+               (- 1
+                  (cos (* (/ x MOUSE-MOVE-WAVE-MAX) (/ pi 2))))))]))]
+    [else (* unknown-x MOUSE-SENSITIVITY)]))
 
 (module+ test
   (check-equal?
