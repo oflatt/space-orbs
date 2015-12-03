@@ -1,5 +1,5 @@
 #lang racket
-(require "../client/structures.rkt" "../client/variables.rkt")
+(require "../client/structures.rkt" "../client/variables.rkt" rackunit)
 
 (define udps
   (udp-open-socket SERVER-ADRESS PORT))
@@ -34,28 +34,44 @@
   (define sender (client hostname port (current-milliseconds)))
   (define l (replace-client old-l sender))
   (define r
-    (take-client-out-of-list l (client hostname port 2)))
+    (take-client-out-of-list l sender))
   (define m (subbytes byte-bucket 0 num-of-bytes))
   (define mvalue (bytes->value m))
   (define oc? (old-client? l))
   (cond
     [(empty? l)
+     (println 1)
      (send-this (list sender)
                 (value->bytes (message "cubes" CUBE-LIST)))
      (send-this (list sender)
                 (value->bytes (message "define" (this-orbdefine sender empty))))
      (server-loop (list sender))]
-    [(equal? (length l) (length r))
-     (define sender-orbdefine (this-orbdefine sender l))
+    [(equal? (length l) (length r));;If it is a new orb connecting
+     (define clean-l
+       (cond
+         [oc?
+          (take-client-out-of-list l oc?)]
+         [else
+          l]))
+     (define sender-orbdefine
+       (this-orbdefine sender clean-l))
      (send-this l
                 (value->bytes (message "new-connect" (list sender))))
      (send-this (list sender)
-                (value->bytes (message "new-connect" l)))
+                (value->bytes (message "new-connect" clean-l)))
      (send-this (list sender)
                 (value->bytes (message "cubes" CUBE-LIST)))
      (send-this (list sender)
                 (value->bytes (message "define" sender-orbdefine)))
-     (server-loop (cons sender l))]
+     (cond
+       [oc?
+        (println (length l))
+        (server-loop (cons sender clean-l))]
+       [else
+        (println (+ 1 (length l)))
+        (server-loop (cons sender clean-l))])]
+    [(equal? mvalue "bad message!")
+     (server-loop l)]
     [(equal? (message-name mvalue) "kill")
      (send-this (list (client-from-orbdefine (message-data mvalue)))
                 (value->bytes (message "death" "respawn")))
@@ -64,6 +80,8 @@
      (server-loop l)]
     [oc?
      (send-this l (value->bytes (message "disconnect" (this-orbdefine oc? empty))))
+     (send-this r m)
+     (println (- (length l) 1))
      (server-loop  (take-client-out-of-list l oc?))]
     [else
      (send-this r m)
@@ -94,7 +112,7 @@
   (cond
     [(empty? l)
      false]
-    [(> (- (current-milliseconds) (client-last-message-time (first l))) 5000);;if it has been this long since the last message
+    [(> (- (current-milliseconds) (client-last-message-time (first l))) 1000);;if it has been this long since the last message
      (first l)]
     [else
      (old-client? (rest l))]))
@@ -120,6 +138,7 @@
      (udp-send-to udps (client-hostname (first l)) (client-port (first l)) b)
      (send-this (rest l) b)]))
 
+;;takes one client out of the list
 (define (take-client-out-of-list l s)
   (cond
     [(empty? l)
@@ -138,6 +157,7 @@
 
 (define (bytes->value bstr)
   (define i (open-input-bytes bstr))
-  (read i))
+  (with-handlers ([exn:fail:read? (lambda (x) "bad message")]);;if it is a bad message
+    (read i)))
 
 (server-loop empty)
