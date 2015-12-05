@@ -1,5 +1,5 @@
 #lang racket
-(require pict3d lens unstable/lens/struct-provide)
+(require pict3d lens unstable/lens)
 (provide (all-defined-out))
 
 ;; key and the speed it is moving in that direction
@@ -19,13 +19,14 @@
 ;;mt is the time in milliseconds at last update and send of state
 (struct/lens game (mode orbs exit? scores? mt) #:transparent)
 
-(define game-orbs-enemys-lens (lens-thrush game-orbs-lens orbs-enemys-lens))
-(define game-orbs-player-lens (lens-thrush game-orbs-lens orbs-player-lens))
-(define game-orbs-player-pos-lens (lens-thrush game-orbs-player-lens orb-pos-lens))
-(define game-orbs-player-time-lens (lens-thrush game-orbs-player-lens orb-time-lens))
-(define game-orbs-player-shots-lens (lens-thrush game-orbs-player-lens orb-shots-lens))
-(define game-orbs-player-deaths-lens (lens-thrush game-orbs-player-lens orb-deaths-lens))
-(define game-orbs-player-kills-lens (lens-thrush game-orbs-player-lens orb-kills-lens))
+(define-nested-lenses [game-orbs game-orbs-lens]
+  [enemys orbs-enemys-lens]
+  [player orbs-player-lens
+    [pos orb-pos-lens]
+    [time orb-time-lens]
+    [shots orb-shots-lens]
+    [deaths orb-deaths-lens]
+    [kills orb-kills-lens]])
 
 (struct/lens client (hostname port last-message-time) #:prefab);;used by server to keep track of clients
 (struct/lens message (name data) #:prefab);;this is what is sent between clients and server
