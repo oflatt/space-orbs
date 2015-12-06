@@ -50,17 +50,20 @@
   [[(mydir x y z)]
    (dir x y z)])
 
-(define (round-pos p)
-  (pos
-   (/ (round (* (pos-x p) 10000)) 10000)
-   (/ (round (* (pos-y p) 10000)) 10000)
-   (/ (round (* (pos-z p) 10000)) 10000)))
+(define (round-10000th x)
+  (/ (round (* x 10000)) 10000))
 
-(define (round-dir d)
-  (dir
-   (/ (round (* (dir-dx d) 10000)) 10000)
-   (/ (round (* (dir-dy d) 10000)) 10000)
-   (/ (round (* (dir-dz d) 10000)) 10000)))
+(define/match (round-pos p)
+  [[(pos x y z)]
+   (pos (round-10000th x)
+        (round-10000th y)
+        (round-10000th z))])
+
+(define/match (round-dir d)
+  [[(dir dx dy dz)]
+   (dir (round-10000th dx)
+        (round-10000th dy)
+        (round-10000th dz))])
 
 (define (round-orbs-dir o)
   (struct-copy orb o [dir (round-dir (orb-dir o))]))
