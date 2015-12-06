@@ -123,21 +123,18 @@
     (shots-convert-to-pos (orb-shots o))]))
 
 (define (shots-convert-to-pos l)
-  (cond
-    [(empty? l)
-     empty]
-    [else
-     (cons
-      (struct-copy
-       shot
-       (first l)
-       [pos
-        (mypos->pos (shot-pos (first l)))]
-       [corner1
-        (mypos->pos (shot-corner1 (first l)))]
-       [corner2
-        (mypos->pos (shot-corner2 (first l)))])
-      (shots-convert-to-pos (rest l)))]))
+  (map shot-convert-to-pos l))
+
+(define (shot-convert-to-pos s)
+  (struct-copy
+   shot
+   s
+   [pos
+    (mypos->pos (shot-pos s))]
+   [corner1
+    (mypos->pos (shot-corner1 s))]
+   [corner2
+    (mypos->pos (shot-corner2 s))]))
 
 (module+ test
   (check-equal?
@@ -163,15 +160,12 @@
                  (list (shot (pos 20 20 0) (pos 0 0 0) (pos 1 1 1) 60 3 50))])))
 
 (define (convert-cubes-to-pos l)
-  (cond
-    [(empty? l)
-     empty]
-    [else
-     (cons
-      (struct-copy mycube (first l)
-                   [pos
-                    (mypos->pos (mycube-pos (first l)))])
-      (convert-cubes-to-pos (rest l)))]))
+  (map convert-cube-to-pos l))
+
+(define (convert-cube-to-pos cube)
+  (struct-copy mycube cube
+               [pos
+                (mypos->pos (mycube-pos cube))]))
 
 (define (bytes->value bstr)
   (define i (open-input-bytes bstr))
