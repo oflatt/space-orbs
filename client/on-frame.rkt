@@ -63,15 +63,9 @@
    orb
    o
    [pos
-    (mypos
-     (pos-x (orb-pos o))
-     (pos-y (orb-pos o))
-     (pos-z (orb-pos o)))]
+    (pos->mypos (orb-pos o))]
    [dir
-    (mydir
-     (dir-dx (orb-dir o))
-     (dir-dy (orb-dir o))
-     (dir-dz (orb-dir o)))]
+    (dir->mydir (orb-dir o))]
    [shots
     (shots-convert-to-mypos (orb-shots o))]))
 
@@ -109,20 +103,11 @@
        shot
        (first l)
        [pos
-        (mypos
-         (pos-x (shot-pos (first l)))
-         (pos-y (shot-pos (first l)))
-         (pos-z (shot-pos (first l))))]
+        (pos->mypos (shot-pos (first l)))]
        [corner1
-        (mypos
-         (pos-x (shot-corner1 (first l)))
-         (pos-y (shot-corner1 (first l)))
-         (pos-z (shot-corner1 (first l))))]
+        (pos->mypos (shot-corner1 (first l)))]
        [corner2
-        (mypos
-         (pos-x (shot-corner2 (first l)))
-         (pos-y (shot-corner2 (first l)))
-         (pos-z (shot-corner2 (first l))))])
+        (pos->mypos (shot-corner2 (first l)))])
       (shots-convert-to-mypos (rest l)))]))
 
 ;;orb-> orb with mypos and mydir instead of pos and dir
@@ -131,15 +116,9 @@
    orb
    o
    [pos
-    (pos
-     (mypos-x (orb-pos o))
-     (mypos-y (orb-pos o))
-     (mypos-z (orb-pos o)))]
+    (mypos->pos (orb-pos o))]
    [dir
-    (dir
-     (mydir-dx (orb-dir o))
-     (mydir-dy (orb-dir o))
-     (mydir-dz (orb-dir o)))]
+    (mydir->dir (orb-dir o))]
    [shots
     (shots-convert-to-pos (orb-shots o))]))
 
@@ -153,20 +132,11 @@
        shot
        (first l)
        [pos
-        (pos
-         (mypos-x (shot-pos (first l)))
-         (mypos-y (shot-pos (first l)))
-         (mypos-z (shot-pos (first l))))]
+        (mypos->pos (shot-pos (first l)))]
        [corner1
-        (pos
-         (mypos-x (shot-corner1 (first l)))
-         (mypos-y (shot-corner1 (first l)))
-         (mypos-z (shot-corner1 (first l))))]
+        (mypos->pos (shot-corner1 (first l)))]
        [corner2
-        (pos
-         (mypos-x (shot-corner2 (first l)))
-         (mypos-y (shot-corner2 (first l)))
-         (mypos-z (shot-corner2 (first l))))])
+        (mypos->pos (shot-corner2 (first l)))])
       (shots-convert-to-pos (rest l)))]))
 
 (module+ test
@@ -200,10 +170,7 @@
      (cons
       (struct-copy mycube (first l)
                    [pos
-                    (pos
-                     (mypos-x (mycube-pos (first l)))
-                     (mypos-y (mycube-pos (first l)))
-                     (mypos-z (mycube-pos (first l))))])
+                    (mypos->pos (mycube-pos (first l)))])
       (convert-cubes-to-pos (rest l)))]))
 
 (define (bytes->value bstr)
@@ -229,13 +196,12 @@
       (lambda (kills)
         (+ 1 kills)))]
     [(this-message? "death" num-of-bytes)
-     (lens-transform
+     (lens-transform/list
+      g
+      game-orbs-player-deaths-lens
+      (lambda (deaths)
+        (+ 1 deaths))
       game-orbs-player-lens
-      (lens-transform
-       game-orbs-player-deaths-lens
-       g
-       (lambda (deaths)
-         (+ 1 deaths)))
       (lambda (player)
         (respawn-orb player)))]
     [(this-message? "reset" num-of-bytes);;tells orb to reset milliseconds offset
