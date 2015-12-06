@@ -107,45 +107,39 @@
   (define s (movekey-speed mk))
   (cond
     [(equal? (movekey-key mk) "w")
-     (move-with-collision
+     (move-with-collision*
       p
-      (pos+ p (dir-scale d (* dt s)))
-      d
+      (dir-scale d s)
       dt
       FINAL-LANDSCAPE)]
     [(equal? (movekey-key mk) "s")
-     (move-with-collision
+     (move-with-collision*
       p
-      (pos+ p (dir-scale (dir-negate d) (* dt s)))
-      (dir-negate d)
+      (dir-scale (dir-negate d) s)
       dt
       FINAL-LANDSCAPE)]
     [(equal? (movekey-key mk) "a")
-     (move-with-collision
+     (move-with-collision*
       p
-      (pos+ p (dir-scale yd (* dt s)))
-      yd
+      (dir-scale yd s)
       dt
       FINAL-LANDSCAPE)]
     [(equal? (movekey-key mk) "d")
-     (move-with-collision
+     (move-with-collision*
       p
-      (pos+ p (dir-scale (dir-negate yd) (* dt s)))
-      (dir-negate yd)
+      (dir-scale (dir-negate yd) s)
       dt
       FINAL-LANDSCAPE)]
     [(equal? (movekey-key mk) "shift")
-     (move-with-collision
+     (move-with-collision*
       p
-      (pos+ p (dir-scale (dir-negate pd) (* dt s)))
-      (dir-negate pd)
+      (dir-scale (dir-negate pd) s)
       dt
       FINAL-LANDSCAPE)]
     [(equal? (movekey-key mk) " ")
-     (move-with-collision
+     (move-with-collision*
       p
-      (pos+ p (dir-scale pd (* dt s)))
-      pd
+      (dir-scale pd s)
       dt
       FINAL-LANDSCAPE)]
     [else p]))
