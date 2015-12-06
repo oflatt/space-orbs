@@ -123,8 +123,12 @@
 ;;movekey, dir, pos, old time, and current time -> pos
 ;;pd is d adjusted by 90 degrees for pitch, and yd is adjusted 90 degrees for yaw, and then they are adjusted for the angle the camera is turned
 (define (adjust-one-key mk d p dt ang)
-  (move-with-collision*
-   p
-   (movekey-velocity mk d ang)
-   dt
-   FINAL-LANDSCAPE))
+  (cond
+    [(member (movekey-key mk) '("w" "a" "s" "d" "shift" " "))
+     (move-with-collision*
+      p
+      (movekey-velocity mk d ang)
+      dt
+      FINAL-LANDSCAPE)]
+    [else
+     p]))
