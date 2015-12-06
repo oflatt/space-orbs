@@ -98,48 +98,33 @@
     [else
      (adjust-pos (rest ms) d (adjust-one-key (first ms) d p dt ang) dt t ang)]))
 
-;;movekey, dir, pos, old time, and current time -> pos
-;;pd is d adjusted by 90 degrees for pitch, and yd is adjusted 90 degrees for yaw, and then they are adjusted for the angle the camera is turned
-(define (adjust-one-key mk d p dt ang)
+;; movekey, dir, and angle -> velocity
+(define (movekey-velocity mk d ang)
   (define-values (yaw pitch) (dir->angles d))
   (define pd (rotate-around-dir (rotate-up d) d ang))
   (define yd (angles->dir (+ 90 yaw) ang))
   (define s (movekey-speed mk))
   (cond
     [(equal? (movekey-key mk) "w")
-     (move-with-collision*
-      p
-      (dir-scale d s)
-      dt
-      FINAL-LANDSCAPE)]
+     (dir-scale d s)]
     [(equal? (movekey-key mk) "s")
-     (move-with-collision*
-      p
-      (dir-scale (dir-negate d) s)
-      dt
-      FINAL-LANDSCAPE)]
+     (dir-scale (dir-negate d) s)]
     [(equal? (movekey-key mk) "a")
-     (move-with-collision*
-      p
-      (dir-scale yd s)
-      dt
-      FINAL-LANDSCAPE)]
+     (dir-scale yd s)]
     [(equal? (movekey-key mk) "d")
-     (move-with-collision*
-      p
-      (dir-scale (dir-negate yd) s)
-      dt
-      FINAL-LANDSCAPE)]
+     (dir-scale (dir-negate yd) s)]
     [(equal? (movekey-key mk) "shift")
-     (move-with-collision*
-      p
-      (dir-scale (dir-negate pd) s)
-      dt
-      FINAL-LANDSCAPE)]
+     (dir-scale (dir-negate pd) s)]
     [(equal? (movekey-key mk) " ")
-     (move-with-collision*
-      p
-      (dir-scale pd s)
-      dt
-      FINAL-LANDSCAPE)]
-    [else p]))
+     (dir-scale pd s)]
+    [else
+     (error 'movekey-velocity "unrecognized key: ~v" (movekey-key mk))]))
+
+;;movekey, dir, pos, old time, and current time -> pos
+;;pd is d adjusted by 90 degrees for pitch, and yd is adjusted 90 degrees for yaw, and then they are adjusted for the angle the camera is turned
+(define (adjust-one-key mk d p dt ang)
+  (move-with-collision*
+   p
+   (movekey-velocity mk d ang)
+   dt
+   FINAL-LANDSCAPE))
