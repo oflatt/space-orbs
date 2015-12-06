@@ -98,29 +98,28 @@
     [else
      (adjust-pos (rest ms) d (adjust-one-key (first ms) d p dt ang) dt t ang)]))
 
-;; movekey, dir, and angle -> velocity
+;; key, speed, dir, and angle -> velocity
 ;; pd is d adjusted by 90 degrees for pitch, and yd is adjusted 90 degrees for
 ;; yaw, and then they are adjusted for the angle the camera is turned
-(define (movekey-velocity mk d ang)
+(define (key-velocity k s d ang)
   (define-values (yaw pitch) (dir->angles d))
   (define pd (rotate-around-dir (rotate-up d) d ang))
   (define yd (angles->dir (+ 90 yaw) ang))
-  (define s (movekey-speed mk))
   (cond
-    [(equal? (movekey-key mk) "w")
+    [(equal? k "w")
      (dir-scale d s)]
-    [(equal? (movekey-key mk) "s")
+    [(equal? k "s")
      (dir-scale (dir-negate d) s)]
-    [(equal? (movekey-key mk) "a")
+    [(equal? k "a")
      (dir-scale yd s)]
-    [(equal? (movekey-key mk) "d")
+    [(equal? k "d")
      (dir-scale (dir-negate yd) s)]
-    [(equal? (movekey-key mk) "shift")
+    [(equal? k "shift")
      (dir-scale (dir-negate pd) s)]
-    [(equal? (movekey-key mk) " ")
+    [(equal? k " ")
      (dir-scale pd s)]
     [else
-     (error 'movekey-velocity "unrecognized key: ~v" (movekey-key mk))]))
+     (error 'key-velocity "unrecognized key: ~v" k)]))
 
 ;;movekey, dir, pos, delta-time, and angle -> pos
 (define (adjust-one-key mk d p dt ang)
@@ -128,7 +127,7 @@
     [(member (movekey-key mk) '("w" "a" "s" "d" "shift" " "))
      (move-with-collision*
       p
-      (movekey-velocity mk d ang)
+      (key-velocity (movekey-key mk) (movekey-speed mk) d ang)
       dt
       FINAL-LANDSCAPE)]
     [else
