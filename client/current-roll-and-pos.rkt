@@ -99,6 +99,8 @@
      (adjust-pos (rest ms) d (adjust-one-key (first ms) d p dt ang) dt t ang)]))
 
 ;; movekey, dir, and angle -> velocity
+;; pd is d adjusted by 90 degrees for pitch, and yd is adjusted 90 degrees for
+;; yaw, and then they are adjusted for the angle the camera is turned
 (define (movekey-velocity mk d ang)
   (define-values (yaw pitch) (dir->angles d))
   (define pd (rotate-around-dir (rotate-up d) d ang))
@@ -120,8 +122,7 @@
     [else
      (error 'movekey-velocity "unrecognized key: ~v" (movekey-key mk))]))
 
-;;movekey, dir, pos, old time, and current time -> pos
-;;pd is d adjusted by 90 degrees for pitch, and yd is adjusted 90 degrees for yaw, and then they are adjusted for the angle the camera is turned
+;;movekey, dir, pos, delta-time, and angle -> pos
 (define (adjust-one-key mk d p dt ang)
   (cond
     [(member (movekey-key mk) '("w" "a" "s" "d" "shift" " "))
