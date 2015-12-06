@@ -214,23 +214,22 @@
       t)]
     [(this-message? "new-connect" num-of-bytes);;gives a new orb
      ;(println "new-connect")
-     (struct-copy game g
-                  [orbs
-                   (struct-copy orbs (game-orbs g)
-                                [enemys
-                                 (append
-                                  (list-of-new-orbs
-                                   (message-data (bytes->value
-                                                  (subbytes byte-bucket 0 num-of-bytes))))
-                                  (orbs-enemys (game-orbs g)))])])]
+     (lens-transform
+      game-orbs-enemys-lens
+      g
+      (lambda (enemys)
+        (append
+         (list-of-new-orbs
+          (message-data (bytes->value
+                         (subbytes byte-bucket 0 num-of-bytes))))
+         enemys)))]
     [(this-message? "define" num-of-bytes);;defines the player's orb
      (define subm (bytes->value (subbytes byte-bucket 0 num-of-bytes)))
      (on-receive
-      (struct-copy game g
-                   [orbs
-                    (struct-copy orbs (game-orbs g)
-                                 [player
-                                  (new-orb-from-define (message-data subm))])])
+      (lens-set
+       game-orbs-player-lens
+       g
+       (new-orb-from-define (message-data subm)))
       n
       t)]
     [(this-message? "disconnect" num-of-bytes);;gives a orbdefine of a client that disconnected
@@ -246,15 +245,15 @@
     [else
      ; (printf "recv at ~a: ~s\n" t (bytes->value (subbytes byte-bucket 0 num-of-bytes)))
      (on-receive
-      (struct-copy game g
-                   [orbs
-                    (struct-copy orbs (game-orbs g)
-                                 [enemys
-                                  (update-an-enemy
-                                   (orbs-enemys (game-orbs g))
-                                   (convert-to-pos
-                                    (message-data
-                                     (bytes->value (subbytes byte-bucket 0 num-of-bytes)))))])])
+      (lens-transform
+       game-orbs-enemys-lens
+       g
+       (lambda (enemys)
+         (update-an-enemy
+          enemys
+          (convert-to-pos
+           (message-data
+            (bytes->value (subbytes byte-bucket 0 num-of-bytes)))))))
       n
       t)]))
 
