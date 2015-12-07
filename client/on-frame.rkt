@@ -63,15 +63,9 @@
    orb
    o
    [pos
-    (mypos
-     (pos-x (orb-pos o))
-     (pos-y (orb-pos o))
-     (pos-z (orb-pos o)))]
+    (pos->mypos (orb-pos o))]
    [dir
-    (mydir
-     (dir-dx (orb-dir o))
-     (dir-dy (orb-dir o))
-     (dir-dz (orb-dir o)))]
+    (dir->mydir (orb-dir o))]
    [shots
     (shots-convert-to-mypos (orb-shots o))]))
 
@@ -109,20 +103,11 @@
        shot
        (first l)
        [pos
-        (mypos
-         (pos-x (shot-pos (first l)))
-         (pos-y (shot-pos (first l)))
-         (pos-z (shot-pos (first l))))]
+        (pos->mypos (shot-pos (first l)))]
        [corner1
-        (mypos
-         (pos-x (shot-corner1 (first l)))
-         (pos-y (shot-corner1 (first l)))
-         (pos-z (shot-corner1 (first l))))]
+        (pos->mypos (shot-corner1 (first l)))]
        [corner2
-        (mypos
-         (pos-x (shot-corner2 (first l)))
-         (pos-y (shot-corner2 (first l)))
-         (pos-z (shot-corner2 (first l))))])
+        (pos->mypos (shot-corner2 (first l)))])
       (shots-convert-to-mypos (rest l)))]))
 
 ;;orb-> orb with mypos and mydir instead of pos and dir
@@ -131,43 +116,25 @@
    orb
    o
    [pos
-    (pos
-     (mypos-x (orb-pos o))
-     (mypos-y (orb-pos o))
-     (mypos-z (orb-pos o)))]
+    (mypos->pos (orb-pos o))]
    [dir
-    (dir
-     (mydir-dx (orb-dir o))
-     (mydir-dy (orb-dir o))
-     (mydir-dz (orb-dir o)))]
+    (mydir->dir (orb-dir o))]
    [shots
     (shots-convert-to-pos (orb-shots o))]))
 
 (define (shots-convert-to-pos l)
-  (cond
-    [(empty? l)
-     empty]
-    [else
-     (cons
-      (struct-copy
-       shot
-       (first l)
-       [pos
-        (pos
-         (mypos-x (shot-pos (first l)))
-         (mypos-y (shot-pos (first l)))
-         (mypos-z (shot-pos (first l))))]
-       [corner1
-        (pos
-         (mypos-x (shot-corner1 (first l)))
-         (mypos-y (shot-corner1 (first l)))
-         (mypos-z (shot-corner1 (first l))))]
-       [corner2
-        (pos
-         (mypos-x (shot-corner2 (first l)))
-         (mypos-y (shot-corner2 (first l)))
-         (mypos-z (shot-corner2 (first l))))])
-      (shots-convert-to-pos (rest l)))]))
+  (map shot-convert-to-pos l))
+
+(define (shot-convert-to-pos s)
+  (struct-copy
+   shot
+   s
+   [pos
+    (mypos->pos (shot-pos s))]
+   [corner1
+    (mypos->pos (shot-corner1 s))]
+   [corner2
+    (mypos->pos (shot-corner2 s))]))
 
 (module+ test
   (check-equal?
@@ -193,18 +160,12 @@
                  (list (shot (pos 20 20 0) (pos 0 0 0) (pos 1 1 1) 60 3 50))])))
 
 (define (convert-cubes-to-pos l)
-  (cond
-    [(empty? l)
-     empty]
-    [else
-     (cons
-      (struct-copy mycube (first l)
-                   [pos
-                    (pos
-                     (mypos-x (mycube-pos (first l)))
-                     (mypos-y (mycube-pos (first l)))
-                     (mypos-z (mycube-pos (first l))))])
-      (convert-cubes-to-pos (rest l)))]))
+  (map convert-cube-to-pos l))
+
+(define (convert-cube-to-pos cube)
+  (struct-copy mycube cube
+               [pos
+                (mypos->pos (mycube-pos cube))]))
 
 (define (bytes->value bstr)
   (define i (open-input-bytes bstr))
@@ -229,13 +190,12 @@
       (lambda (kills)
         (+ 1 kills)))]
     [(this-message? "death" num-of-bytes)
-     (lens-transform
+     (lens-transform/list
+      g
+      game-orbs-player-deaths-lens
+      (lambda (deaths)
+        (+ 1 deaths))
       game-orbs-player-lens
-      (lens-transform
-       game-orbs-player-deaths-lens
-       g
-       (lambda (deaths)
-         (+ 1 deaths)))
       (lambda (player)
         (respawn-orb player)))]
     [(this-message? "reset" num-of-bytes);;tells orb to reset milliseconds offset
@@ -254,23 +214,22 @@
       t)]
     [(this-message? "new-connect" num-of-bytes);;gives a new orb
      ;(println "new-connect")
-     (struct-copy game g
-                  [orbs
-                   (struct-copy orbs (game-orbs g)
-                                [enemys
-                                 (append
-                                  (list-of-new-orbs
-                                   (message-data (bytes->value
-                                                  (subbytes byte-bucket 0 num-of-bytes))))
-                                  (orbs-enemys (game-orbs g)))])])]
+     (lens-transform
+      game-orbs-enemys-lens
+      g
+      (lambda (enemys)
+        (append
+         (list-of-new-orbs
+          (message-data (bytes->value
+                         (subbytes byte-bucket 0 num-of-bytes))))
+         enemys)))]
     [(this-message? "define" num-of-bytes);;defines the player's orb
      (define subm (bytes->value (subbytes byte-bucket 0 num-of-bytes)))
      (on-receive
-      (struct-copy game g
-                   [orbs
-                    (struct-copy orbs (game-orbs g)
-                                 [player
-                                  (new-orb-from-define (message-data subm))])])
+      (lens-set
+       game-orbs-player-lens
+       g
+       (new-orb-from-define (message-data subm)))
       n
       t)]
     [(this-message? "disconnect" num-of-bytes);;gives a orbdefine of a client that disconnected
@@ -286,15 +245,15 @@
     [else
      ; (printf "recv at ~a: ~s\n" t (bytes->value (subbytes byte-bucket 0 num-of-bytes)))
      (on-receive
-      (struct-copy game g
-                   [orbs
-                    (struct-copy orbs (game-orbs g)
-                                 [enemys
-                                  (update-an-enemy
-                                   (orbs-enemys (game-orbs g))
-                                   (convert-to-pos
-                                    (message-data
-                                     (bytes->value (subbytes byte-bucket 0 num-of-bytes)))))])])
+      (lens-transform
+       game-orbs-enemys-lens
+       g
+       (lambda (enemys)
+         (update-an-enemy
+          enemys
+          (convert-to-pos
+           (message-data
+            (bytes->value (subbytes byte-bucket 0 num-of-bytes)))))))
       n
       t)]))
 

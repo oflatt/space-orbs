@@ -36,20 +36,38 @@
 (struct/lens mydir (dx dy dz) #:prefab)
 (struct/lens mycube (pos scale color) #:prefab)
 
-(define (round-pos p)
-  (pos
-   (/ (round (* (pos-x p) 10000)) 10000)
-   (/ (round (* (pos-y p) 10000)) 10000)
-   (/ (round (* (pos-z p) 10000)) 10000)))
+(define/match (pos->mypos p)
+  [[(pos x y z)]
+   (mypos x y z)])
+(define/match (mypos->pos p)
+  [[(mypos x y z)]
+   (pos x y z)])
 
-(define (round-dir d)
-  (dir
-   (/ (round (* (dir-dx d) 10000)) 10000)
-   (/ (round (* (dir-dy d) 10000)) 10000)
-   (/ (round (* (dir-dz d) 10000)) 10000)))
+(define/match (dir->mydir d)
+  [[(dir x y z)]
+   (mydir x y z)])
+(define/match (mydir->dir d)
+  [[(mydir x y z)]
+   (dir x y z)])
+
+(define (round-10000th x)
+  (/ (round (* x 10000)) 10000))
+
+(define/match (round-pos p)
+  [[(pos x y z)]
+   (pos (round-10000th x)
+        (round-10000th y)
+        (round-10000th z))])
+
+(define/match (round-dir d)
+  [[(dir dx dy dz)]
+   (dir (round-10000th dx)
+        (round-10000th dy)
+        (round-10000th dz))])
 
 (define (round-orbs-dir o)
   (struct-copy orb o [dir (round-dir (orb-dir o))]))
 
-(define (pos->dir p)
-  (dir (pos-x p) (pos-y p) (pos-z p)))
+(define/match (pos->dir p)
+  [[(pos x y z)]
+   (dir x y z)])

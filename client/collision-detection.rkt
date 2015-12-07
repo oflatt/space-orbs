@@ -1,6 +1,11 @@
 #lang racket
 (require pict3d rackunit "rotate-dir.rkt" "variables.rkt"  "structures.rkt" "landscape.rkt")
-(provide move-with-collision)
+(provide move-with-collision move-with-collision*)
+
+;; original position, velocity, delta-time, and a landscape-pict3d -> moved position with collisions accounted for
+;; collisions are complety inelastic for now
+(define (move-with-collision* op v dt L)
+  (move-with-collision op (pos+ op (dir-scale v dt)) v dt L))
 
 ;;original position, moved position, a dir, delta time, and a landscape/pict3d-> moved position with any collisions accounted for
 ;;poc is pos of collision and sd is surface dir, the dir perpendicular to the surface

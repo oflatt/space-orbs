@@ -98,54 +98,37 @@
     [else
      (adjust-pos (rest ms) d (adjust-one-key (first ms) d p dt ang) dt t ang)]))
 
-;;movekey, dir, pos, old time, and current time -> pos
-;;pd is d adjusted by 90 degrees for pitch, and yd is adjusted 90 degrees for yaw, and then they are adjusted for the angle the camera is turned
-(define (adjust-one-key mk d p dt ang)
+;; key, speed, dir, and angle -> velocity
+;; pd is d adjusted by 90 degrees for pitch, and yd is adjusted 90 degrees for
+;; yaw, and then they are adjusted for the angle the camera is turned
+(define (key-velocity k s d ang)
   (define-values (yaw pitch) (dir->angles d))
   (define pd (rotate-around-dir (rotate-up d) d ang))
   (define yd (angles->dir (+ 90 yaw) ang))
-  (define s (movekey-speed mk))
   (cond
-    [(equal? (movekey-key mk) "w")
-     (move-with-collision
+    [(equal? k "w")
+     (dir-scale d s)]
+    [(equal? k "s")
+     (dir-scale (dir-negate d) s)]
+    [(equal? k "a")
+     (dir-scale yd s)]
+    [(equal? k "d")
+     (dir-scale (dir-negate yd) s)]
+    [(equal? k "shift")
+     (dir-scale (dir-negate pd) s)]
+    [(equal? k " ")
+     (dir-scale pd s)]
+    [else
+     (error 'key-velocity "unrecognized key: ~v" k)]))
+
+;;movekey, dir, pos, delta-time, and angle -> pos
+(define (adjust-one-key mk d p dt ang)
+  (cond
+    [(member (movekey-key mk) '("w" "a" "s" "d" "shift" " "))
+     (move-with-collision*
       p
-      (pos+ p (dir-scale d (* dt s)))
-      d
+      (key-velocity (movekey-key mk) (movekey-speed mk) d ang)
       dt
       FINAL-LANDSCAPE)]
-    [(equal? (movekey-key mk) "s")
-     (move-with-collision
-      p
-      (pos+ p (dir-scale (dir-negate d) (* dt s)))
-      (dir-negate d)
-      dt
-      FINAL-LANDSCAPE)]
-    [(equal? (movekey-key mk) "a")
-     (move-with-collision
-      p
-      (pos+ p (dir-scale yd (* dt s)))
-      yd
-      dt
-      FINAL-LANDSCAPE)]
-    [(equal? (movekey-key mk) "d")
-     (move-with-collision
-      p
-      (pos+ p (dir-scale (dir-negate yd) (* dt s)))
-      (dir-negate yd)
-      dt
-      FINAL-LANDSCAPE)]
-    [(equal? (movekey-key mk) "shift")
-     (move-with-collision
-      p
-      (pos+ p (dir-scale (dir-negate pd) (* dt s)))
-      (dir-negate pd)
-      dt
-      FINAL-LANDSCAPE)]
-    [(equal? (movekey-key mk) " ")
-     (move-with-collision
-      p
-      (pos+ p (dir-scale pd (* dt s)))
-      pd
-      dt
-      FINAL-LANDSCAPE)]
-    [else p]))
+    [else
+     p]))
