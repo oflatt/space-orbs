@@ -27,7 +27,7 @@
                   [scores? #t])]
     [(find-this-movekey lkey (orb-movekeys (orbs-player (game-orbs g))))
      g]
-    [(or (equal? lkey "w") (equal? lkey "s") (equal? lkey "a") (equal? lkey "d") (equal? lkey " ") (equal? lkey "shift") (equal? lkey "q") (equal? lkey "e"))
+    [(member lkey '("w" "a" "s" "d" " " "shift" "q" "e"))
      (struct-copy game g
                   [orbs (on-orbs-key (game-orbs g) n t key)]
                   [mt t])]
@@ -40,13 +40,16 @@
 (define (on-player-key o n t key)
   (define lkey (string-foldcase key))
   (define result
-    (struct-copy orb o
-                 [pos (current-pos o t)]
-                 [time t]
-                 [movekeys (cons (movekey lkey STARTING-SPEED)  (orb-movekeys o))]
-                 [roll (current-roll o t)]))
+    (on-player-key-result o n t lkey))
   (send-orb* result 'key t)
   result)
+
+(define (on-player-key-result o n t lkey)
+  (struct-copy orb o
+               [pos (current-pos o t)]
+               [time t]
+               [movekeys (cons (movekey lkey STARTING-SPEED)  (orb-movekeys o))]
+               [roll (current-roll o t)]))
 
 (module+ test (check-equal? (on-player-key (struct-copy orb TESTORB [pos (pos 2 2 2)] [movekeys empty]) "n" 5 "shift")
               (struct-copy orb TESTORB [pos (pos 2 2 2)] [movekeys (list (movekey "shift" STARTING-SPEED))])))
