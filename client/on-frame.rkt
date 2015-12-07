@@ -94,21 +94,18 @@
                 )))
 
 (define (shots-convert-to-mypos l)
-  (cond
-    [(empty? l)
-     empty]
-    [else
-     (cons
-      (struct-copy
-       shot
-       (first l)
-       [pos
-        (pos->mypos (shot-pos (first l)))]
-       [corner1
-        (pos->mypos (shot-corner1 (first l)))]
-       [corner2
-        (pos->mypos (shot-corner2 (first l)))])
-      (shots-convert-to-mypos (rest l)))]))
+  (map shot-convert-to-mypos l))
+
+(define (shot-convert-to-mypos s)
+  (struct-copy
+   shot
+   s
+   [pos
+    (pos->mypos (shot-pos s))]
+   [corner1
+    (pos->mypos (shot-corner1 s))]
+   [corner2
+    (pos->mypos (shot-corner2 s))]))
 
 ;;orb-> orb with mypos and mydir instead of pos and dir
 (define (convert-to-pos o)
