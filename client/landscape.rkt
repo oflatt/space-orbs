@@ -5,8 +5,8 @@
 (define TEST-LAND
   (freeze
    (combine
-    (rectangle (pos 0 10 0) (pos 10 20 10))
-    (rectangle (pos 10 0 0) (pos 20 10 10)))))
+    (rectangle (pos 0 100 0) (pos 200 200 100))
+    (rectangle (pos 200 0 0) (pos 200 100 100)))))
 
 ;list of cubes and number of cubes to make-> list of cubes
 (define (pick-random-cubes l n)

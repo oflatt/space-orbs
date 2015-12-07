@@ -46,49 +46,50 @@
     [else
      (adjust-pos (orb-movekeys o) (orb-dir o) (orb-pos o) (- t (orb-time o)) t (current-roll o t))]))
 
-(module+ test (check-equal?
-               (current-pos TESTORB 8)
-               (pos 1 1 1)))
-(module+ test (check-equal?
-               (current-pos (struct-copy orb TESTORB
-                                         [movekeys (list (movekey "w" 1/2))]
-                                         [pos (pos 5 1 1)]
-                                         [time 5]) 7)
-               (pos 4 1 1)))
-(module+ test (check-equal?
-               (current-pos (struct-copy orb TESTORB
-                                         [movekeys (list (movekey "s" 1/2))]
-                                         [pos (pos 5 1 1)]
-                                         [time 5]) 7)
-               (pos 6 1 1)))
-(module+ test (check-equal?
-               (round-pos
-                (current-pos (struct-copy orb TESTORB
-                                          [movekeys (list (movekey "a" 1/2))]
-                                          [pos (pos 1 1 1)]
-                                          [time 5]) 7))
-               (pos 1 0 1)))
-(module+ test (check-equal?
-               (round-pos
-                (current-pos (struct-copy orb TESTORB
-                                          [movekeys (list (movekey "d" 1/2))]
-                                          [pos (pos 1 1 1)]
-                                          [time 5]) 7))
-               (pos 1 2 1)))
-(module+ test (check-equal?
-               (round-pos
-                (current-pos (struct-copy orb TESTORB
-                                          [movekeys (list (movekey " " 1/2))]
-                                          [pos (pos 1 1 1)]
-                                          [time 5]) 7))
-               (pos 1 1 2)))
-(module+ test (check-equal?
-               (round-pos
-                (current-pos (struct-copy orb TESTORB
-                                          [movekeys (list (movekey "shift" 1/2))]
-                                          [pos (pos 1 1 1)]
-                                          [time 5]) 7))
-               (pos 1 1 0)))
+(module+ test;;note: these tests rely on the fact that FINAL-LANDSCAPE is empty in the middle of the room.
+  (check-equal?
+   (current-pos TESTORB 8)
+   (pos 1 1 1))
+  (check-equal?
+   (current-pos (struct-copy orb TESTORB
+                             [movekeys (list (movekey "w" 1/2))]
+                             [pos (pos 25 21 21)]
+                             [time 5]) 7)
+   (pos 24 21 21))
+  (check-equal?
+   (current-pos (struct-copy orb TESTORB
+                             [movekeys (list (movekey "s" 1/2))]
+                             [pos (pos 25 21 21)]
+                             [time 5]) 7)
+   (pos 26 21 21))
+  (check-equal?
+   (round-pos
+    (current-pos (struct-copy orb TESTORB
+                              [movekeys (list (movekey "a" 1/2))]
+                              [pos (pos 21 21 21)]
+                              [time 5]) 7))
+   (pos 21 20 21))
+  (check-equal?
+   (round-pos
+    (current-pos (struct-copy orb TESTORB
+                              [movekeys (list (movekey "d" 1/2))]
+                              [pos (pos 21 21 21)]
+                              [time 5]) 7))
+   (pos 21 22 21))
+  (check-equal?
+   (round-pos
+    (current-pos (struct-copy orb TESTORB
+                              [movekeys (list (movekey " " 1/2))]
+                              [pos (pos 21 21 21)]
+                              [time 5]) 7))
+   (pos 21 21 22))
+  (check-equal?
+   (round-pos
+    (current-pos (struct-copy orb TESTORB
+                              [movekeys (list (movekey "shift" 1/2))]
+                              [pos (pos 21 21 21)]
+                              [time 5]) 7))
+   (pos 21 21 20)))
 
 ;;pos, list of movekeys, a dir, deltatime, and time-> ajusted position of the orb for the axis
 (define (adjust-pos ms d p dt t ang)
@@ -121,7 +122,7 @@
     [else
      (error 'key-velocity "unrecognized key: ~v" k)]))
 
-;;movekey, dir, pos, delta-time, and angle -> pos
+;;movekey, dir, pos, delta-time, angle -> pos
 (define (adjust-one-key mk d p dt ang)
   (cond
     [(member (movekey-key mk) '("w" "a" "s" "d" "shift" " "))

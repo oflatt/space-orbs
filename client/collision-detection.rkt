@@ -7,7 +7,7 @@
 (define (move-with-collision* op v dt L)
   (move-with-collision op (pos+ op (dir-scale v dt)) v dt L))
 
-;;original position, moved position, a dir, delta time, and a landscape/pict3d-> moved position with any collisions accounted for
+;;original position, moved position, a dir, delta time, and a landscape-pict3d-> moved position with any collisions accounted for
 ;;poc is pos of collision and sd is surface dir, the dir perpendicular to the surface
 ;L is the landscape
 (define (move-with-collision op mp d dt L)
@@ -98,13 +98,13 @@
    (move-with-collision origin (pos 1 0 0) +x 1 TEST-LAND)
    (pos 1 0 0)))
 (module+ test
-  (define test (round-pos (move-with-collision (pos 0 9.5 0) (pos 20.0 -20 0.7071) (dir 0.7071 0.7071 0.0) 1 TEST-LAND)))
+  (define test (move-with-collision (pos 0 95 2) (pos 200.0 -200 0.7071) (dir 0.7071 0.7071 0.0) 1 TEST-LAND))
   (check-equal?
    (cond
      [(equal? (pos-z test) -0.0)
       (pos (pos-x test) (pos-y test) 0)]
      [else test])
-   (round-pos (pos SLIDE-SPEED 9.5 0))))
+   (pos SLIDE-SPEED 95 2)))
 
 ;sp is a slided pos and posc is point of slide collision
 ;;takes old pos, point of collision, dir, surface data, delta time, and landscape
