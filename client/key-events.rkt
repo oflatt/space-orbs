@@ -1,5 +1,5 @@
 #lang racket
-(require rackunit pict3d "structures.rkt" "current-roll-and-pos.rkt" "variables.rkt" "big-crunch.rkt" "on-frame.rkt")
+(require rackunit pict3d racket/set "structures.rkt" "current-roll-and-pos.rkt" "variables.rkt" "big-crunch.rkt" "on-frame.rkt")
 (provide on-key on-release)
 
 (define (find-this-movekey key ms)
@@ -18,20 +18,26 @@
 (define (on-key g n ot key)
   (define t (- ot MASTER-TIME-OFFSET))
   (define lkey (string-foldcase key))
+  (define g*
+    (struct-copy game g
+                 [held-keys (set-add (game-held-keys g) lkey)]))
   (cond
     [(equal? key "escape")
-     (struct-copy game g
+     (struct-copy game g*
                   [exit? #t])]
     [(equal? key "\t")
-     (struct-copy game g
+     (struct-copy game g*
                   [scores? #t])]
-    [(find-this-movekey lkey (orb-movekeys (orbs-player (game-orbs g))))
+    [(set-member? (game-held-keys g) lkey)
+     ;; ignore it
      g]
+    [(find-this-movekey lkey (orb-movekeys (orbs-player (game-orbs g*))))
+     g*]
     [(member lkey '("w" "a" "s" "d" " " "shift" "q" "e"))
-     (struct-copy game g
-                  [orbs (on-orbs-key (game-orbs g) n t key)]
+     (struct-copy game g*
+                  [orbs (on-orbs-key (game-orbs g*) n t key)]
                   [mt t])]
-    [else g]))
+    [else g*]))
 
 (define (on-orbs-key os n t key)
   (struct-copy orbs os
@@ -59,15 +65,17 @@
 (define (on-release g n ot key)
   (define t (- ot MASTER-TIME-OFFSET))
   (define lkey (string-foldcase key))
+  (define g*
+    (struct-copy game g [held-keys (set-remove (game-held-keys g) lkey)]))
   (cond
     [(equal? key "\t")
-     (struct-copy game g
+     (struct-copy game g*
                   [scores? #f])]
     [(member lkey '("w" "a" "s" "d" " " "shift" "q" "e"))
-     (struct-copy game g
+     (struct-copy game g*
                   [orbs (on-orbs-release (game-orbs g) n t key)]
                   [mt t])]
-    [else g]))
+    [else g*]))
 
 (define (on-orbs-release os n t key)
     (struct-copy orbs os

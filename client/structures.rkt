@@ -17,7 +17,9 @@
 ;orbs is an orbs and exit? is wheather or not to stop the state and close the window
 ;;scores? is whether or not tab is pressed, to show scores ect.
 ;;mt is the time in milliseconds at last update and send of state
-(struct/lens game (mode orbs exit? scores? mt) #:transparent)
+;;held-keys is a set containing the keys that are currently pressed down, and
+;;  that we don't want to react to until they are released
+(struct/lens game (mode orbs exit? scores? mt held-keys) #:transparent)
 
 (define-nested-lenses [game-orbs game-orbs-lens]
   [enemys orbs-enemys-lens]
