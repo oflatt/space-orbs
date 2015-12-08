@@ -2,19 +2,6 @@
 (require rackunit pict3d racket/set "structures.rkt" "current-roll-and-pos.rkt" "variables.rkt" "big-crunch.rkt" "on-frame.rkt")
 (provide on-key on-release)
 
-(define (find-this-movekey key ms)
-  (cond
-    [(empty? ms)
-     #f]
-    [(equal? (movekey-key (first ms)) key)
-     (first ms)]
-    [else (find-this-movekey key (rest ms))]))
-
-(module+ test (check-equal? (find-this-movekey "w" '())
-                           #f))
-(module+ test (check-equal? (find-this-movekey "a" (list (movekey "w" 1/2) (movekey "a" 1/2)))
-                            (movekey "a" 1/2)))
-
 (define (on-key g n ot key)
   (define t (- ot MASTER-TIME-OFFSET))
   (define lkey (string-foldcase key))
@@ -31,8 +18,6 @@
     [(set-member? (game-held-keys g) lkey)
      ;; ignore it
      g]
-    [(find-this-movekey lkey (orb-movekeys (orbs-player (game-orbs g*))))
-     g*]
     [(member lkey '("w" "a" "s" "d" " " "shift" "q" "e"))
      (struct-copy game g*
                   [orbs (on-orbs-key (game-orbs g*) n t key)]
