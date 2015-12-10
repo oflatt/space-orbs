@@ -51,19 +51,25 @@
     [else
      (get-list-of-collisions op mp (rest l))]))
 
-;;takes a old pos, a dir, a delta time, and two surface datas
+;; takes a old pos, a dir, a delta time, and two surface datas
+;; d should be a non-zero dir
 (define (slide-against-corner op d dt sd1 sd2)
   (define slide-dir (dir-cross sd1 sd2))
-  (define slide-dir-opposite (dir-cross sd2 sd1))
-  (define sp (pos+ op (dir-scale slide-dir (* dt SLIDE-SPEED))));;slide pos using slide speed and time
-  (define sp-o (pos+ op (dir-scale slide-dir-opposite (* dt SLIDE-SPEED))));;opposite direction slide pos
-  (define sd-ang (ang-between-dirs d slide-dir))
-  (define sd-ang-o (ang-between-dirs d slide-dir-opposite))
   (cond
-    [(< sd-ang sd-ang-o);;if the dir is closer to the original slide dir than the opposite of it (so it slides in the right direction)
-     sp]
+    [(= 0 (dir-dx slide-dir) (dir-dy slide-dir) (dir-dz slide-dir))
+     op]
     [else
-     sp-o]))
+     ;; now we know that slide-dir is non-zero
+     (define slide-dir-opposite (dir-negate slide-dir))
+     (define sp (pos+ op (dir-scale slide-dir (* dt SLIDE-SPEED))));;slide pos using slide speed and time
+     (define sp-o (pos+ op (dir-scale slide-dir-opposite (* dt SLIDE-SPEED))));;opposite direction slide pos
+     (define sd-ang (ang-between-dirs d slide-dir))
+     (define sd-ang-o (ang-between-dirs d slide-dir-opposite))
+     (cond
+       [(< sd-ang sd-ang-o);;if the dir is closer to the original slide dir than the opposite of it (so it slides in the right direction)
+        sp]
+       [else
+        sp-o])]))
 
 ;;list -> list of all items that were true
 (define (get-true l)
@@ -132,4 +138,8 @@
       [(> (dir-up-to-roll d sd) 5)
        SLIDE-SPEED]
       [else 0]))
-  (pos+ op (dir-scale slide-dir (* dt slide-speed))))
+  (cond [(false? slide-dir)
+         op]
+        [else
+         ;; now we know that slide-dir is a dir of magnitude 1
+         (pos+ op (dir-scale slide-dir (* dt slide-speed)))]))

@@ -43,8 +43,9 @@
    (round (dir-up-to-roll +x +z))
    0.0))
 
-;;two dir -> ang
-;;gives the angle between two dirs
+;; two dir -> ang
+;; gives the angle between two dirs
+;; the two dirs should both be non-zero
 (define (ang-between-dirs dir1 dir2)
   (define d1 (dir-normalize dir1))
   (define d2 (dir-normalize dir2))
