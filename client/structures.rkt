@@ -2,8 +2,10 @@
 (require pict3d lens unstable/lens)
 (provide (all-defined-out))
 
-;; key and the speed it is moving in that direction
-(struct/lens movekey (key speed) #:prefab)
+;; speeds in the given key directions
+;; the keys s, d, shift, and q are represented by negetive numbers
+;;   in the w, a, space, and e fields.
+(struct/lens movekeys (w a space e) #:prefab)
 ;corner 1 and 2 are pos for drawing and pos is where to move it
 ;time is time in milliseconds when it was shot
 (struct/lens shot (corner1 corner2 pos yaw pitch time) #:prefab)
@@ -37,6 +39,45 @@
 (struct/lens mypos (x y z) #:prefab)
 (struct/lens mydir (dx dy dz) #:prefab)
 (struct/lens mycube (pos scale color) #:prefab)
+
+(define empty-movekeys
+  (movekeys 0 0 0 0))
+
+(define (movekeys+w mks w2)
+  (lens-transform movekeys-w-lens mks (λ (w) (+ w w2))))
+(define (movekeys+a mks a2)
+  (lens-transform movekeys-a-lens mks (λ (a) (+ a a2))))
+(define (movekeys+space mks space2)
+  (lens-transform movekeys-space-lens mks (λ (space) (+ space space2))))
+(define (movekeys+e mks e2)
+  (lens-transform movekeys-e-lens mks (λ (e) (+ e e2))))
+
+(define (movekeys+s mks s)
+  (movekeys+w mks (- s)))
+(define (movekeys+d mks d)
+  (movekeys+a mks (- d)))
+(define (movekeys+shift mks shift)
+  (movekeys+space mks (- shift)))
+(define (movekeys+q mks q)
+  (movekeys+e mks (- q)))
+
+(define (w-movekey w)
+  (movekeys w 0 0 0))
+(define (a-movekey a)
+  (movekeys 0 a 0 0))
+(define (space-movekey space)
+  (movekeys 0 0 space 0))
+(define (e-movekey e)
+  (movekeys 0 0 0 e))
+
+(define (s-movekey s)
+  (w-movekey (- s)))
+(define (d-movekey d)
+  (a-movekey (- d)))
+(define (shift-movekey shift)
+  (space-movekey (- shift)))
+(define (q-movekey q)
+  (e-movekey (- q)))
 
 (define/match (pos->mypos p)
   [[(pos x y z)]

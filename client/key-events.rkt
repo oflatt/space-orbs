@@ -39,11 +39,22 @@
   (struct-copy orb o
                [pos (current-pos o t)]
                [time t]
-               [movekeys (cons (movekey lkey STARTING-SPEED)  (orb-movekeys o))]
+               [movekeys (movekeys-add-key (orb-movekeys o) lkey STARTING-SPEED)]
                [roll (current-roll o t)]))
 
-(module+ test (check-equal? (on-player-key (struct-copy orb TESTORB [pos (pos 2 2 2)] [movekeys empty]) "n" 5 "shift")
-              (struct-copy orb TESTORB [pos (pos 2 2 2)] [movekeys (list (movekey "shift" STARTING-SPEED))])))
+(define (movekeys-add-key mks lkey speed)
+  (match lkey
+    ["w" (movekeys+w mks speed)]
+    ["a" (movekeys+a mks speed)]
+    ["s" (movekeys+s mks speed)]
+    ["d" (movekeys+d mks speed)]
+    [" " (movekeys+space mks speed)]
+    ["shift" (movekeys+shift mks speed)]
+    ["q" (movekeys+q mks speed)]
+    ["e" (movekeys+e mks speed)]))
+
+(module+ test (check-equal? (on-player-key (struct-copy orb TESTORB [pos (pos 2 2 2)] [movekeys empty-movekeys]) "n" 5 "shift")
+              (struct-copy orb TESTORB [pos (pos 2 2 2)] [movekeys (shift-movekey STARTING-SPEED)])))
 
 ;#############################################################################################################################################################################################
 
@@ -78,16 +89,9 @@
                o
                [pos (current-pos o t)]
                [time t]
-               [movekeys (remove-this-movekey (orb-movekeys o) lkey)]
+               [movekeys (movekeys-add-key (orb-movekeys o) lkey (- STARTING-SPEED))]
                [roll (current-roll o t)]))
 
-(module+ test (check-equal? (on-player-release (struct-copy orb TESTORB [pos (pos 2 2 2)] [movekeys (list (movekey " " 1))]) "n" 5 " ")
-              (struct-copy orb TESTORB [pos (pos 2 2 2)] [movekeys empty])))
+(module+ test (check-equal? (on-player-release (struct-copy orb TESTORB [pos (pos 2 2 2)] [movekeys (space-movekey STARTING-SPEED)]) "n" 5 " ")
+              (struct-copy orb TESTORB [pos (pos 2 2 2)] [movekeys empty-movekeys])))
 
-(define (remove-this-movekey ms key)
-  (cond
-    [(empty? ms) ms]
-    [(equal? key (movekey-key (first ms)))
-     (remove-this-movekey (rest ms) key)]
-    [else
-     (cons (first ms) (remove-this-movekey (rest ms) key))]))
