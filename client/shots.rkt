@@ -102,9 +102,9 @@
    (move
     (rotate-z
      (rotate-y
-      (cylinder
-       (shot-corner1 s)
-       (shot-corner2 s))
+      (cone
+       (shot-corner2 s)
+       (shot-corner1 s))
       (+ 90 (- pitch)))
      yaw)
     (dir (pos-x p) (pos-y p) (pos-z p)))))
