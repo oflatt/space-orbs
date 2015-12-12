@@ -27,7 +27,7 @@
 
 (define RELOAD-SPEED 1000);in milliseconds
 (define SHOT-LIFE 700);in milliseconds
-(define SHOT-WIDTH 0.5);radius of shot
+(define SHOT-WIDTH 0.08);radius of shot
 
 (define UPDATE-SPEED 100);speed it sends state and updates the key times and old positions in milliseconds
 (define MASTER-TIME-OFFSET 0);;set! variable for how much to offset the time, to keep time consistant for new connects- I think it works ok
