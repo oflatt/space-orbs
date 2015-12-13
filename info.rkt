@@ -5,6 +5,7 @@
 (define deps
   '("base"
     "pict3d"
+    "pict3d-die-cut"
     "lens"
     "compatibility-lib"
     "gui-lib"
