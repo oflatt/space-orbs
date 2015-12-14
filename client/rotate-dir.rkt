@@ -59,8 +59,12 @@
 ;;rotates the dir "up" by the angle and around the dir by roll
 ;;finds "up" with a dir and roll
 (define (rotate-up d [ang 90] #:roll [roll 0])
-  (define-values (yaw pitch) (dir->angles d))
-  (rotate-around-dir (angles->dir yaw (+ pitch ang)) d roll))
+  (cond
+    [(= 0 (dir-dx d) (dir-dy d) (dir-dz d))
+     d]
+    [else
+     (define-values (yaw pitch) (dir->angles d))
+     (rotate-around-dir (angles->dir yaw (+ pitch ang)) d roll)]))
 
 (module+ test
   (check-equal?
@@ -75,8 +79,7 @@
 ;;rotates the dir "down" by the angle and around the dir by roll
 ;;finds "down" with a dir and roll
 (define (rotate-down d [ang 90] #:roll [roll 0])
-  (define-values (yaw pitch) (dir->angles d))
-  (rotate-around-dir (angles->dir yaw (- pitch ang)) d roll))
+ (rotate-up d (- ang) #:roll roll))
 
 (module+ test
   (check-equal?
