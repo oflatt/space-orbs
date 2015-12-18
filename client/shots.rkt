@@ -48,9 +48,11 @@
 ;;because I want to define poc, the list has to not be empty
 (define (shot-orb-helper-not-empty pos dir l t)
   (define o (first l))
-  (define poc (trace (draw-enemy o t) pos dir))
+  (define enemy-pic (draw-enemy o t))
+  (define poc (trace enemy-pic pos dir))
+  (define pocl (trace (combine FINAL-LANDSCAPE enemy-pic) pos dir))
   (cond
-    [poc
+    [(equal? poc pocl)
      (orbdefine 1 "dummy-color-value" (orb-hostname o) (orb-port o))]
     [else
      (shot-orb-helper pos dir (rest l) t)]))
