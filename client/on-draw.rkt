@@ -3,20 +3,15 @@
 (provide on-draw draw-enemy)
 
 (define (on-draw g n ot)
+  ;;(println (game-player-team g))
   (define t (- ot MASTER-TIME-OFFSET))
+  (define p (game-player g))
   (combine
    (draw-dashboard g t)
-   (on-orbs-draw (game-orbs g) n t)))
-
-(define (on-orbs-draw os n t)
-  (define p (orbs-player os))
-  (define draw
-    (combine
-     FINAL-LANDSCAPE
-     (apply combine (shot-pics os t))
-     (draw-enemys (orbs-enemys os) t)
-     (lights+camera (current-pos p t) (orb-dir p) (current-roll p t))))
-  draw)
+   FINAL-LANDSCAPE
+   (apply combine (shot-pics g t))
+   (draw-enemys (get-other-orbs g) t)
+   (lights+camera (current-pos p t) (orb-dir p) (current-roll p t))));;from first person perspective
 
 (define (lights+camera currentpos d ang)
   (combine (apply combine

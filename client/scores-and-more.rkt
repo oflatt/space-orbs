@@ -54,10 +54,7 @@
 ;;orb and time-> pict
 ;;draws cursor and 
 (define (draw-dashboard g t)
-  (define o
-    (lens-view
-     game-orbs-player-lens
-     g))
+  (define o (game-player g))
   (combine
    (make-cross o t)
    (draw-scores g t)))
@@ -70,10 +67,7 @@
 ;;orb and time -> pict
 ;;if tab is 
 (define (draw-scores g t)
-  (define o
-    (lens-view
-     game-orbs-player-lens
-     g))
+  (define o (game-player g))
   (cond
     [(game-scores? g)
      (make-scoreboard o t)]

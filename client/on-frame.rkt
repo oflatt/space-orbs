@@ -19,37 +19,39 @@
   (define t (- ot MASTER-TIME-OFFSET))
   (define cleaned (clean-old-shots g n t))
   (define with-received (on-receive cleaned n t))
-  (define player (orbs-player (game-orbs with-received)))
+  (define player (game-player with-received))
   ;(collect-garbage #t)
   (cond
-    [(send-orb g t)
-     (struct-copy game with-received
-                  [mt t]
-                  [orbs
-                   (struct-copy orbs (game-orbs with-received)
-                                [player
-                                 (struct-copy orb player
-                                              [pos (current-pos player t)]
-                                              [time t]
-                                              [roll (current-roll player t)])])])]
+    [(>= (- t (game-mt g)) UPDATE-SPEED)
+     (define updated-game
+       (update-game with-received t))
+     (send-orb updated-game)
+     updated-game]
     [else with-received]))
 
 (define (clean-old-shots g n t)
   (lens-transform
-   game-orbs-player-shots-lens
+   game-player-shots-lens
    g
    (λ (shots)
      (kill-old-shots shots t))))
 
-;;sends if send speed time has passed
-;;takes a game
-(define (send-orb g t)
-  (cond
-    [(>= (- t (game-mt g)) UPDATE-SPEED)
-     ;;(println (orbs-player (game-orbs g)))
-     (send-state (convert-to-mypos (orbs-player (game-orbs g))))
-     #t]
-    [else #f]))
+;;re-freashes the pos, time, and roll of the player
+;;makes mt t to signify it has refreashed
+(define (update-game g t)
+  (define player (game-player g))
+  (struct-copy game g
+                  [mt t]
+                  [player
+                   (struct-copy orb player
+                                [pos (current-pos player t)]
+                                [time t]
+                                [roll (current-roll player t)])]))
+
+;;takes a game and sends the player orb to server
+(define (send-orb g)
+  ;;(println (orbs-player (game-orbs g)))
+  (send-state (convert-to-mypos (game-player g))))
 
 ;;sends the message
 (define (send-orb* o why t)
@@ -177,82 +179,72 @@
     (udp-receive!*
      udps
      byte-bucket))
+  (define gamemode (game-mode g))
+  (define (recur x)
+    (on-receive x n t))
   (cond
     [(equal? hostname #f)
      g]
     [(this-message? "kill" num-of-bytes)
-     (lens-transform
-      game-orbs-player-kills-lens
-      g
-      (lambda (kills)
-        (+ 1 kills)))]
+     (recur
+         (lens-transform
+          game-player-kills-lens
+          g
+          (lambda (kills)
+            (+ 1 kills))))]
     [(this-message? "death" num-of-bytes)
-     (lens-transform/list
-      g
-      game-orbs-player-deaths-lens
-      (lambda (deaths)
-        (+ 1 deaths))
-      game-orbs-player-lens
-      (lambda (player)
-        (respawn-orb player)))]
+     (recur
+         (lens-transform/list
+          g
+          game-player-deaths-lens
+          (lambda (deaths)
+            (+ 1 deaths))
+          game-player-lens
+          (lambda (player)
+            (respawn-orb player))))]
     [(this-message? "reset" num-of-bytes);;tells orb to reset milliseconds offset
      (set-offset t)
-     (on-receive
-      g
-      n
-      t)]
+     (recur g)]
     [(this-message? "cubes" num-of-bytes);;gives cubes for landscape
      (set-cubes
       (convert-cubes-to-pos
        (message-data (bytes->value (subbytes byte-bucket 0 num-of-bytes)))))
-     (on-receive
-      g
-      n
-      t)]
-    [(this-message? "new-connect" num-of-bytes);;gives a new orb
-     ;(println "new-connect")
-     (lens-transform
-      game-orbs-enemys-lens
-      g
-      (lambda (enemys)
-        (append
-         (list-of-new-orbs
-          (message-data (bytes->value
-                         (subbytes byte-bucket 0 num-of-bytes))))
-         enemys)))]
+     (recur g)]
+    [(this-message? "new-connect" num-of-bytes);;gives a list of new orb
+     (define new-orbs
+       (list-of-new-orbs
+        (message-data (bytes->value
+                       (subbytes byte-bucket 0 num-of-bytes)))))
+     (recur
+         (simple-change-enemys
+          g
+          (lambda (enemys)
+            (append new-orbs enemys))))]
     [(this-message? "define" num-of-bytes);;defines the player's orb
      (define subm (bytes->value (subbytes byte-bucket 0 num-of-bytes)))
-     (on-receive
+     (recur
       (lens-set
-       game-orbs-player-lens
+       game-player-lens
        g
-       (new-orb-from-define (message-data subm)))
-      n
-      t)]
+       (new-orb-from-define (message-data subm))))]
     [(this-message? "disconnect" num-of-bytes);;gives a orbdefine of a client that disconnected
      (define subm (bytes->value (subbytes byte-bucket 0 num-of-bytes)))
-     (on-receive
-      (lens-transform
-       game-orbs-enemys-lens
-       g
-       (lambda (enemys)
-         (delete-this-orb-from-define (message-data subm) enemys)))
-      n
-      t)]
+     (recur
+       (simple-change-enemys
+        g
+        (lambda (enemys)
+          (delete-this-orb-from-define (message-data subm) enemys))))]
     [else
      ; (printf "recv at ~a: ~s\n" t (bytes->value (subbytes byte-bucket 0 num-of-bytes)))
-     (on-receive
-      (lens-transform
-       game-orbs-enemys-lens
+     (recur
+      (simple-change-enemys
        g
        (lambda (enemys)
          (update-an-enemy
           enemys
           (convert-to-pos
            (message-data
-            (bytes->value (subbytes byte-bucket 0 num-of-bytes)))))))
-      n
-      t)]))
+            (bytes->value (subbytes byte-bucket 0 num-of-bytes))))))))]))
 
 (define (respawn-orb o)
   (struct-copy orb o

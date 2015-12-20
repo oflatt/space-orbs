@@ -1,41 +1,44 @@
 #lang racket
-(require pict3d rackunit "frame-handling.rkt" "structures.rkt" "current-roll-and-pos.rkt" "variables.rkt" "draw-enemys.rkt" "on-frame.rkt" "landscape.rkt")
+(require pict3d rackunit lens "frame-handling.rkt" "structures.rkt" "current-roll-and-pos.rkt" "variables.rkt" "draw-enemys.rkt" "on-frame.rkt" "landscape.rkt")
 (provide shot-pics new-shot kill-old-shots on-shoot)
 
-;;orbs and a time -> player's orb
-(define (on-shoot os t)
-  (define killc (shot-orb os t));;killed client
-  (define with-new (add-shot os t))
+;;game and a time -> player's orb
+(define (on-shoot g t)
+  (define killc (shot-orb g t));;if they killed any orbs
+  (define with-new (add-shot g t))
   (cond
-    [(< (- t (orb-reload-time (orbs-player os))) RELOAD-SPEED)
-     (orbs-player os)]
+    [(< (- t (orb-reload-time (game-player g))) RELOAD-SPEED)
+     g]
     [killc
      (send-kill killc)
      with-new]
     [else
      with-new]))
 
-(define (add-shot os t)
-  (define o (orbs-player os))
+(define (add-shot g t)
   (define poc (trace
                (combine
                 FINAL-LANDSCAPE
-                (draw-enemys (orbs-enemys os) t))
-               (current-pos o t)
-               (orb-dir o)))
-  (struct-copy
-   orb
-   o
-   [shots
-    (cond
-      [(equal? poc #f)
-       (orb-shots o)]
-      [else (cons (new-shot o poc t) (orb-shots o))])]
-   [reload-time t]))
+                (draw-enemys (get-other-orbs g) t))
+               (current-pos (game-player g) t)
+               (orb-dir (game-player g))));;where they shot
+  (lens-transform
+   game-player-lens
+   g
+   (lambda (o)
+     (struct-copy
+      orb
+      o
+      [shots
+       (cond
+         [(equal? poc #f)
+          (orb-shots o)]
+         [else (cons (new-shot o poc t) (orb-shots o))])]
+      [reload-time t]))))
 
 ;;takes an orbs and time and gives a client
-(define (shot-orb os t)
-  (shot-orb-helper (current-pos (orbs-player os) t) (orb-dir (orbs-player os)) (orbs-enemys os) t))
+(define (shot-orb g t)
+  (shot-orb-helper (current-pos (game-player g) t) (orb-dir (game-player g)) (get-other-orbs g) t))
 
 ;;takes a pos, dir, and a list of enemy orbs -> false or the orbdefine of the one that was shot
 (define (shot-orb-helper pos dir l t)
@@ -59,11 +62,11 @@
      
   
 ;;takes an orbs -> list of pict3ds for all the shots in it
-(define (shot-pics os t)
+(define (shot-pics g t)
   (shot-pics-from-list
    (cons
-    (orbs-player os)
-    (orbs-enemys os))
+    (game-player g)
+    (get-other-orbs g))
    t))
 
 (define (shot-pics-from-list l t)

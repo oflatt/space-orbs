@@ -5,45 +5,41 @@
 (define BEGINNING? #t);sets the mouse to the middle initially without moving the view
 
 (define (on-mouse g n ot x-ignored y-ignored e)
-  (define t (- ot MASTER-TIME-OFFSET))
+  (define t (- ot MASTER-TIME-OFFSET));;all the functions used in big-bang need this
   (cond
     [BEGINNING?
      (set! BEGINNING? #f)
      (move-mouse-to-center)
      g]
+    [(equal? e "left-down")
+     (on-shoot (update-mt g t) t)]
     [else
      (struct-copy game g
-                  [orbs (on-orbs-mouse (game-orbs g) n t e)]
+                  [player (on-player-mouse (game-player g) n t e)]
                   [mt t])]))
 
-
-(define (on-orbs-mouse os n t e)
+;;orb -> orb
+(define (on-player-mouse p n t e)
   (define result
-    (struct-copy orbs os
-                 [player (on-player-mouse (orbs-player os) n t e os)]))
-  (unless (equal? (orbs-player result) (orbs-player os))
-    (send-orb* (orbs-player result) e t))
+    (on-player-mouse-helper p n t e))
+  (unless (equal? result p)
+    (send-orb* result e t))
   result)
 
-(define (on-player-mouse o n t e os)
+(define (on-player-mouse-helper o n t e)
   (define-values (x y) (get-mouse-delta))
   (define x-scaled
     (scale-for-sensitivity x))
   (define y-scaled
     (scale-for-sensitivity y))
   (define n (new-dir-and-ang o x-scaled y-scaled t))
-  (cond
-    [(equal? e "left-down")
-     (on-shoot
-      os t)]
-    [else
-     (struct-copy
-      orb
-      o
-      [pos (current-pos o t)]
-      [time t]
-      [dir (first n)]
-      [roll (second n)])]))
+  (struct-copy
+   orb
+   o
+   [pos (current-pos o t)]
+   [time t]
+   [dir (first n)]
+   [roll (second n)]))
 
 (define (scale-for-sensitivity unknown-x)
   (define negateorone
@@ -79,10 +75,7 @@
      TESTORB
      1
      5
-     "drag")
-    (orbs
-     TESTORB
-     empty))
+     "drag"))
    (struct-copy
     orb
     TESTORB

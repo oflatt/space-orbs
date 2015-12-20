@@ -20,13 +20,9 @@
      g]
     [(member lkey '("w" "a" "s" "d" " " "shift" "q" "e"))
      (struct-copy game g*
-                  [orbs (on-orbs-key (game-orbs g*) n t key)]
+                  [player (on-player-key (game-player g*) n t key)]
                   [mt t])]
     [else g*]))
-
-(define (on-orbs-key os n t key)
-  (struct-copy orbs os
-               [player (on-player-key (orbs-player os) n t key)]))
 
 (define (on-player-key o n t key)
   (define lkey (string-foldcase key))
@@ -69,13 +65,9 @@
                   [scores? #f])]
     [(member lkey '("w" "a" "s" "d" " " "shift" "q" "e"))
      (struct-copy game g*
-                  [orbs (on-orbs-release (game-orbs g) n t key)]
+                  [player (on-player-release (game-player g) n t key)]
                   [mt t])]
     [else g*]))
-
-(define (on-orbs-release os n t key)
-    (struct-copy orbs os
-               [player (on-player-release (orbs-player os) n t key)]))
 
 (define (on-player-release o n t key)
   (define lkey (string-foldcase key))

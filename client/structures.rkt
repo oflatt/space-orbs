@@ -1,5 +1,5 @@
 #lang racket
-(require pict3d lens unstable/lens)
+(require pict3d lens unstable/lens rackunit)
 (provide (all-defined-out))
 
 ;; speeds in the given key directions
@@ -14,23 +14,85 @@
 ;;shots is a list of shots to draw and reload-time is time the player shot last
 ;;name and color are strings
 (struct/lens orb (pos time movekeys dir roll shots reload-time name color hostname port kills deaths) #:prefab)
-;;player is a orb and enemys is a list of orbs
-(struct/lens orbs (player enemys) #:transparent);;enemys includes teammates, confusing!
-;orbs is an orbs and exit? is wheather or not to stop the state and close the window
+;;number defines which team it is
+;;members is a list of orbs- excluding the player if it is the player-team
+;;red, blue, and green are numbers for the color of the team
+(struct/lens team (number members red green blue) #:transparent)
+;;player is a orb, player-team is the team with all the player's teammates, and enemy-teams is a list of teams
+;;exit? is wheather or not to stop the state and close the window
 ;;scores? is whether or not tab is pressed, to show scores ect.
 ;;mt is the time in milliseconds at last update and send of state
 ;;held-keys is a set containing the keys that are currently pressed down, and
 ;;  that we don't want to react to until they are released
-(struct/lens game (mode orbs exit? scores? mt held-keys) #:transparent)
+(struct/lens game (mode player player-team enemy-teams exit? scores? mt held-keys) #:transparent)
 
-(define-nested-lenses [game-orbs game-orbs-lens]
-  [enemys orbs-enemys-lens]
-  [player orbs-player-lens
-    [pos orb-pos-lens]
-    [time orb-time-lens]
-    [shots orb-shots-lens]
-    [deaths orb-deaths-lens]
-    [kills orb-kills-lens]])
+;;gamemode and map are both symbols
+;;this would be passed as a message to the client
+(struct/lens gamemode-info (gamemode map))
+
+;;positions is a list of pos
+;;directions is a list of dir
+;;positions and directions are parallel, ordered lists
+;;red, green, and blue are numbers
+(struct/lens spawn (positions directions red green blue))
+;;name is a symbol and spawns is a list of spawn
+;;a space-map would not travel in a message, it would be named in gamemode-info
+(struct/lens space-map (name spawns frozen-pict) #:transparent)
+
+(define-nested-lenses [game-player game-player-lens]
+  [pos orb-pos-lens]
+  [time orb-time-lens]
+  [shots orb-shots-lens]
+  [deaths orb-deaths-lens]
+  [kills orb-kills-lens])
+
+(define (update-mt g t)
+  (lens-transform
+   game-mt-lens
+   g
+   (lambda (mt)
+     t)))
+
+;;takes a game and a function -> game
+;;the function takes a list of orbs from the first enemy team in the enemy-teams list
+;;for now serves the purpose of simplyfying the structures when changing a list of enemys
+;;to get space orbs working with the new structures before changing it
+(define (simple-change-enemys g function)
+  (lens-transform
+   game-enemy-teams-lens
+   g
+   (lambda (enemy-teams)
+     (cons
+      (lens-transform
+       team-members-lens
+       (first enemy-teams);;the first enemy team
+       (lambda (members)
+         (function members)));;call the function on the list of orbs
+      (rest enemy-teams)))))
+
+(module+ test
+  (check-equal?
+   (simple-change-enemys
+    (game
+     'deathmatch
+     (orb (pos 1 0 0) 0 empty-movekeys (dir 1 0 0) 0 empty 0 "1" "blue" #f #f 0 0)
+     (team 1 empty 0 0 0)
+     (list (team 2 empty 0 0 0))
+     #f
+     #f
+     0
+     (set))
+    (lambda (enemys)
+      (orb (pos 1 0 0) 0 empty-movekeys (dir 1 0 0) 0 empty 0 "1" "red" #f #f 0 0)))
+   (game
+     'deathmatch
+     (orb (pos 1 0 0) 0 empty-movekeys (dir 1 0 0) 0 empty 0 "1" "blue" #f #f 0 0)
+     (team 1 empty 0 0 0)
+     (list (team 2 (orb (pos 1 0 0) 0 empty-movekeys (dir 1 0 0) 0 empty 0 "1" "red" #f #f 0 0) 0 0 0))
+     #f
+     #f
+     0
+     (set))))
 
 (struct/lens client (hostname port last-message-time) #:prefab);;used by server to keep track of clients
 (struct/lens message (name data) #:prefab);;this is what is sent between clients and server
