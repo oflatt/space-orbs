@@ -55,7 +55,7 @@
           l]))
      (define sender-orbdefine
        (this-orbdefine sender clean-l))
-     (send-this l
+     (send-this clean-l
                 (value->bytes (message "new-connect" (list sender))))
      (send-this (list sender)
                 (value->bytes (message "new-connect" clean-l)))

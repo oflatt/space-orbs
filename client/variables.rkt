@@ -22,7 +22,8 @@
      #f
      #f
      0
-     (set)))
+     (set)
+     0))
 
 (define DEFAULT-ORB (orb DEFAULTPOS 0 empty-movekeys DEFAULTDIR 0 empty 0 "1" "blue" #f #f 0 0))
 
@@ -37,6 +38,12 @@
 (define PORT 50002)
 (define SERVER-ADRESS "10.0.1.12")
 (define CLIENT-ADRESS "c-67-166-78-233.hsd1.ut.comcast.net")
+
+(define DEFAULT-SERVER
+  (server-game 'none 'none empty 0))
+
+;;speed in milliseconds in between times that the client tries to send a message to connect to the server
+(define SPEED-OF-HELLO 5000)
 
 (define TESTORB (orb (pos 1 1 1) 5 empty-movekeys (dir -1 0 0) 0 empty 0 "Bob" "blue" #f #f 0 0))
 
@@ -63,3 +70,7 @@
 
 (define (set!DEATHS-NUM-CACHE l)
   (set! DEATHS-NUM-CACHE l))
+
+(define GAMEMODES
+  (list "free-for-all" "deathmatch"))
+(define GAME-LENGTH (* 5 60 1000));;length of each game in milliseconds

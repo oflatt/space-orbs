@@ -25,8 +25,53 @@
 
 (define CUBE-LIST (pick-random-cubes empty 25))
 
+;;takes a server-game
+(define (server-loop g)
+  (define-values (num-of-bytes hostname port)
+    (udp-receive!
+     udps
+     byte-bucket))
+  (define sender-client (client hostname port (current-milliseconds)))
+  (define m (subbytes byte-bucket 0 num-of-bytes))
+  (define mvalue (bytes->value m))
+  (define l (server-game-orbs g))
+  (define cl (get-clients g))
+  (define (recur x)
+            (server-loop x))
+  (cond
+    [(equal? mvalue "bad message!")
+     (recur g)]
+    [(equal? (message-name mvalue) "hello")
+     (define client-server-orb (new-server-orb sender-client g))
+     (println (+ 1 (length l)))
+     (send-this (list sender)
+                (value->bytes (message "cubes" CUBE-LIST)))
+     (send-this (list sender)
+                (value->bytes (message "define" (server-orb->orbdefine client-server-orb g))))
+     (send-this (list sender)
+                (value->bytes (message "new-connect" (server-orb-list->orbdefine-list (server-game orbs)))))
+     (send-this cl
+                (value->bytes (message "new-connect" (server-orb->orbdefine client-server-orb g))))
+     (recur (cons client-server-orb g))]
+    [else
+     (recur g)]))
+
+;;client and a server-game -> server-orb
+(define (new-server-orb c g)
+  (... ;;check the map first to see how many teams
+
+;;server-game, client, and a string for the name -> game with the client added as a new orb
+(define (add-orb g c n)
+  (lens-transform
+   server-game-orbs-lens
+   g
+   (lambda (l)
+     (cons
+      (server-orb n c 0 0)
+      l))))
+
 ;;takes a list of clients
-(define (server-loop old-l)
+(define (old-server-loop old-l)
   (define-values (num-of-bytes hostname port)
     (udp-receive!
      udps
@@ -160,4 +205,16 @@
   (with-handlers ([exn:fail:read? (lambda (x) "bad message")]);;if it is a bad message
     (read i)))
 
-(server-loop empty)
+;;server-game -> list of clients
+(define (get-clients g)
+  (get-clients-helper (server-game-orbs)))
+
+;;list of server-orbs -> list of clients
+(define (get-clients-helper l)
+  (cond
+    [(empty? l)
+     empty]
+    [else
+     (cons (server-orb-client (first l)) (get-clients-helper (rest l)))]))
+
+(server-loop DEFAULT-SERVER)

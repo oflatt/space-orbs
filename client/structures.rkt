@@ -2,6 +2,8 @@
 (require pict3d lens unstable/lens rackunit)
 (provide (all-defined-out))
 
+;;FOR CLIENT----------------------------------------------------------------------------------------------------------------
+
 ;; speeds in the given key directions
 ;; the keys s, d, shift, and q are represented by negetive numbers
 ;;   in the w, a, space, and e fields.
@@ -9,7 +11,7 @@
 ;corner 1 and 2 are pos for drawing and pos is where to move it
 ;time is time in milliseconds when it was shot
 (struct/lens shot (corner1 corner2 pos yaw pitch time) #:prefab)
-;;position and time at last key change.list of moves. Pos is a list of 3 coordinates that is current. (continue on next line)
+;;position and time at last key change.list of moves. Pos is a list of 3 coordinates that is current.
 ;;Dir is direction it is pointing and roll is how much the camera is rotated. mx and my are mouse coordinates
 ;;shots is a list of shots to draw and reload-time is time the player shot last
 ;;name and color are strings
@@ -24,20 +26,8 @@
 ;;mt is the time in milliseconds at last update and send of state
 ;;held-keys is a set containing the keys that are currently pressed down, and
 ;;  that we don't want to react to until they are released
-(struct/lens game (mode player player-team enemy-teams exit? scores? mt held-keys) #:transparent)
-
-;;gamemode and map are both symbols
-;;this would be passed as a message to the client
-(struct/lens gamemode-info (gamemode map))
-
-;;positions is a list of pos
-;;directions is a list of dir
-;;positions and directions are parallel, ordered lists
-;;red, green, and blue are numbers
-(struct/lens spawn (positions directions red green blue))
-;;name is a symbol and spawns is a list of spawn
-;;a space-map would not travel in a message, it would be named in gamemode-info
-(struct/lens space-map (name spawns frozen-pict) #:transparent)
+;;not-connected? is a number for the last time it tried to connect to the server, or false if it is connected
+(struct/lens game (mode player player-team enemy-teams exit? scores? mt held-keys not-connected?) #:transparent)
 
 (define-nested-lenses [game-player game-player-lens]
   [pos orb-pos-lens]
@@ -94,9 +84,37 @@
      0
      (set))))
 
+;;FOR MAPS-----------------------------------------------------------------------------------------------------------
+
+;;positions is a list of pos
+;;directions is a list of dir
+;;positions and directions are parallel, ordered lists
+;;red, green, and blue are numbers
+(struct/lens spawn (positions directions red green blue))
+;;name is a symbol and spawns is a list of spawn
+;;a space-map would not travel in a message, it would be named in gamemode-info
+(struct/lens space-map (name spawns frozen-pict) #:transparent)
+
+;;FOR SERVER/MESSAGES---------------------------------------------------------------------------------------------
+
 (struct/lens client (hostname port last-message-time) #:prefab);;used by server to keep track of clients
+;;name is a string and client is a client for that orb. Kills, deaths, and team are numbers
+(struct/lens server-orb (name client kills deaths team))
+;;a game from the server's perspective
+;;gamemode and map are symbols
+;;orbs is a list of server-orb
+;;start-time is a the current-milliseconds that the game was started
+(struct/lens server-game (gamemode map orbs start-time))
+
 (struct/lens message (name data) #:prefab);;this is what is sent between clients and server
 (struct/lens orbdefine (name color hostname port) #:prefab);;used for sending info about an orb for kills, new orbs, ect.
+
+;;gamemode and map are both symbols
+;;this would be passed as a message to the client
+(struct/lens gamemode-info (gamemode map))
+
+;;name is a symbol and data is a structure for mycubes or text for sending a message from the server
+(struct/lens server-landscape (name data) #:prefab)
 
 (struct/lens mypos (x y z) #:prefab)
 (struct/lens mydir (dx dy dz) #:prefab)

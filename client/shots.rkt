@@ -10,7 +10,11 @@
     [(< (- t (orb-reload-time (game-player g))) RELOAD-SPEED)
      g]
     [killc
-     (send-kill killc)
+     (cond
+       [(game-not-connected? g)
+        (println "error: shot an orb before connected to server")]
+       [else
+        (send-kill killc)])
      with-new]
     [else
      with-new]))

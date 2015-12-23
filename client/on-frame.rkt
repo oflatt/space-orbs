@@ -15,8 +15,20 @@
  CLIENT-ADRESS
  PORT)
 
+;;this on-frame checks if it is not connected and tries connect if it is not
 (define (on-frame g n ot)
   (define t (- ot MASTER-TIME-OFFSET))
+  (define c? (game-not-connected? g))
+  (cond
+    [c?
+     (cond
+       [(>= (- t c?) SPEED-OF-HELLO)
+        (udp-send
+         udps
+         (value->bytes (message "hello" (orb-name (game-player g)))))])])
+   (on-frame-helper g n t))
+
+(define (on-frame-helper g n t)
   (define cleaned (clean-old-shots g n t))
   (define with-received (on-receive cleaned n t))
   (define player (game-player with-received))
@@ -51,7 +63,11 @@
 ;;takes a game and sends the player orb to server
 (define (send-orb g)
   ;;(println (orbs-player (game-orbs g)))
-  (send-state (convert-to-mypos (game-player g))))
+  (cond
+    [(game-not-connected? g)
+     void]
+    [else
+     (send-state (convert-to-mypos (game-player g)))]))
 
 ;;sends the message
 (define (send-orb* o why t)
@@ -174,6 +190,17 @@
   (make-bytes 20000))
 
 ;;returns a game
+;;These are the messages
+;;"hello"- message from client trying to connect to the server for the first time containing the name of that orb
+;;"kill"- message from client with the orbdefine of the orb it killed
+;;"add kill"- message from server with a number of how many kills to add to kills
+;;"add death"- message from server with number of how many deaths to add to deaths, also automatically respawns orb
+;;"reset time"- message from server telling clients to sync their time by setting the offset to current time
+;;"server landscape"- message from server with a server landscape
+;;"new connect"- message from server with a list of orb defines to add
+;;"define"- message from server defining the client it is sent to, officially connects the client to server
+;;"disconnect"- message from server telling an orb that disconnected
+;;"bye"- message from client that says it is disconnecting
 (define (on-receive g n t)
   (define-values (num-of-bytes hostname port)
     (udp-receive!*
@@ -185,30 +212,44 @@
   (cond
     [(equal? hostname #f)
      g]
-    [(this-message? "kill" num-of-bytes)
+    [(this-message? "add kill" num-of-bytes)
      (recur
          (lens-transform
           game-player-kills-lens
           g
           (lambda (kills)
-            (+ 1 kills))))]
-    [(this-message? "death" num-of-bytes)
+            (+
+             (message-data (bytes->value
+                            (subbytes byte-bucket 0 num-of-bytes)))
+             kills))))]
+    [(this-message? "add death" num-of-bytes)
      (recur
          (lens-transform/list
           g
           game-player-deaths-lens
           (lambda (deaths)
-            (+ 1 deaths))
+            (+
+             (message-data (bytes->value
+                            (subbytes byte-bucket 0 num-of-bytes)))
+             deaths))
           game-player-lens
           (lambda (player)
             (respawn-orb player))))]
-    [(this-message? "reset" num-of-bytes);;tells orb to reset milliseconds offset
+    [(this-message? "reset time" num-of-bytes);;tells orb to reset milliseconds offset
      (set-offset t)
      (recur g)]
-    [(this-message? "cubes" num-of-bytes);;gives cubes for landscape
-     (set-cubes
-      (convert-cubes-to-pos
-       (message-data (bytes->value (subbytes byte-bucket 0 num-of-bytes)))))
+    [(this-message? "server landscape" num-of-bytes);;gives a server-landscape
+     (define sl
+       (message-data (bytes->value (subbytes byte-bucket 0 num-of-bytes))))
+     (cond
+       [(equal? (server-landscape-name sl) 'cubes)
+        (set-cubes
+         (convert-cubes-to-pos
+          (server-landscape-data sl)))]
+       [(equal? (server-landscape-name sl) "text")
+        void];;FIXME, make server landscape variable
+       [else
+        (println "error: got an unrecognized server-landscape name")])
      (recur g)]
     [(this-message? "new-connect" num-of-bytes);;gives a list of new orb
      (define new-orbs
@@ -223,10 +264,13 @@
     [(this-message? "define" num-of-bytes);;defines the player's orb
      (define subm (bytes->value (subbytes byte-bucket 0 num-of-bytes)))
      (recur
-      (lens-set
-       game-player-lens
-       g
-       (new-orb-from-define (message-data subm))))]
+         (lens-set
+          game-not-connected?-lens
+          (lens-set
+           game-player-lens
+           g
+           (new-orb-from-define (message-data subm)))
+          #f))]
     [(this-message? "disconnect" num-of-bytes);;gives a orbdefine of a client that disconnected
      (define subm (bytes->value (subbytes byte-bucket 0 num-of-bytes)))
      (recur
@@ -335,6 +379,12 @@
   (udp-send
    udps
    (value->bytes (message "kill" c))))
+
+;;string and data to send
+(define (send-this n d)
+  (udp-send
+   udps
+   (value->bytes (message n d))))
 
 ;there is a copy of this in shots.rkt but it needs to require on frame
 (define (kill-old-shots l t)
