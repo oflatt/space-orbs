@@ -2,11 +2,11 @@
 (require "../client/structures.rkt" "../client/variables.rkt" rackunit)
 
 (define udps
-  (udp-open-socket SERVER-ADRESS PORT))
+  (udp-open-socket CLIENT-ADDRESS PORT))
 
 (udp-bind!
  udps
- SERVER-ADRESS
+ CLIENT-ADDRESS
  PORT
  #t)
 

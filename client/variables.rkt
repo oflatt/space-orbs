@@ -35,8 +35,8 @@
 (define UPDATE-SPEED 100);speed it sends state and updates the key times and old positions in milliseconds
 (define MASTER-TIME-OFFSET 0);;set! variable for how much to offset the time, to keep time consistant for new connects- I think it works ok
 (define PORT 50002)
-(define SERVER-ADRESS "10.0.1.12")
-(define CLIENT-ADRESS "c-67-166-78-233.hsd1.ut.comcast.net")
+(define CLIENT-ADDRESS "10.0.1.12")
+(define SERVER-ADDRESS "c-67-166-78-233.hsd1.ut.comcast.net")
 
 (define TESTORB (orb (pos 1 1 1) 5 empty-movekeys (dir -1 0 0) 0 empty 0 "Bob" "blue" #f #f 0 0))
 
