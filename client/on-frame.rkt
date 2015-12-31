@@ -3,7 +3,7 @@
 (provide on-frame send-orb* send-kill)
 
 (define udps
-  (udp-open-socket CLIENT-ADRESS PORT))
+  (udp-open-socket SERVER-ADDRESS PORT))
 
 (udp-bind!
  udps
@@ -12,7 +12,7 @@
 
 (udp-connect!
  udps
- CLIENT-ADRESS
+ SERVER-ADDRESS
  PORT)
 
 (define (on-frame g n ot)
