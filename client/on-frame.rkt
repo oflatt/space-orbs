@@ -254,7 +254,7 @@
                    DEFAULTPOS2]
                   [else
                    DEFAULTPOS])]
-               [movekeys empty-movekeys]
+               ;[movekeys empty-movekeys]
                [dir DEFAULTDIR2]
                [roll 0]))
 
