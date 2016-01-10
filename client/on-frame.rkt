@@ -25,7 +25,6 @@
     [(>= (- t (game-mt g)) UPDATE-SPEED)
      (define updated-game
        (update-game with-received t))
-     (send-orb updated-game)
      updated-game]
     [else with-received]))
 
